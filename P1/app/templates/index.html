@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block title %}
+    {{ title }}
+{% endblock%}
+
+{% block header %}
+    {{ title }}
+{% endblock %}
+
+{% block content %}
+    {% if cabecera %}
+        {{ cabecera }}
+        <br>
+    {% else %}
+        <form action="" method="post">
+            <input name="movieName" type="text" placeholder="Enter movie's name">
+            <select name="movieCategory">
+                    <option value="NONE">-------</option> 
+                {% for cat in categories %}
+                    <option value="{{ cat }}">{{ cat }}</option> 
+                {% endfor %}
+            </select>
+            <input type="submit" value="SearchMovie">
+        </form>
+    {% endif %}
+    <br>
+    {% for item in movies %}
+        <div id="divPosterYTexto">
+            <div id = "divPosterPequenio">
+                <img id="posterPequenio" src="{{ url_for('static', filename=item.poster) }}" alt="Poster {{ item.titulo }}">
+            </div>
+            <div id="divPeliculaInfo">
+                <a href="{{ url_for('showMovie', slugNameMovie=item.slug_name)}}">{{ item.titulo }}</a></li>
+            </div>
+        </div>
+        <br>
+    {% endfor %}
+{% endblock %}

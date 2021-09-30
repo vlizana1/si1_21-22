@@ -1,0 +1,105 @@
+/*
+ * Estilos de 'base.html'
+ */
+
+body {
+   background-color: rgb(121, 146, 255);
+}
+
+#header {
+    height: 90px;
+}
+
+#headerLeft {
+    width: 1500px;
+    height: 90px;
+    float: left;
+}
+
+#headerRight {
+    width: 300px;
+    height: 90px;
+    float: right;
+    text-align: center;
+}
+
+#menu {
+    background-color: rgb(158, 176, 255);
+    width: 300px;
+    height: 790px;
+    float: left;
+    overflow-y: scroll;
+}
+
+#content {
+    background-color: rgb(193, 204, 255);
+    width: 1500px;
+    height: 790px;
+    float: right;
+    overflow-y: scroll;
+}
+
+#footer {
+    height: 40px;
+    clear: both;
+    text-align: center;
+}
+
+/*
+ * Estilos de 'detalleMovie.html'
+ */
+
+#contentCornerTR {
+    float: right;
+    height: 80px;
+    text-align: center;
+}
+
+#posterGrande {
+    width: 300px;
+    height: 400px;
+}
+
+#posterPequenio {
+    width: 110px;
+    height: 110px;
+}
+
+#divPosterYTexto {
+    height: 90px;
+}
+
+#divPosterPequenio {
+    float: left;
+    width: 90px;
+    height: 90px;
+}
+
+#divPeliculaInfo {
+    float: left;
+    height: 90px;
+    text-align: left;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

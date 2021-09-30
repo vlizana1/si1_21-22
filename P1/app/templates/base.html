@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %} {% endblock %}- VideoClub</title>
+    <!-- Uso de url_for para obtener la ruta de elementos de la página -->
+    <link rel="stylesheet" type="text/css" href={{ url_for('static', filename='estilo.css') }}/>
+</head>
+
+<body>
+    <div id="header">
+    	<div id="headerLeft">
+    	    <h1>{% block header %} {% endblock %}</h1>
+	    </div>
+	    <div id="headerRight">
+            {% if not session['usuario'] %}
+                <a href="{{ url_for('login') }}">Sign In</a><br>
+                <a href="{{ url_for('register') }}">Sign Up</a><br>
+                <span>User: Anonymous</span>
+            {% else %}
+                <a href="{{ url_for('logout') }}">Log out</a><br>
+                <span>User: {{ session['usuario'] }}</span>
+            {% endif %}
+        </div>
+    </div>
+    
+    <div id="menu">
+        Enlaces:
+        <ul>
+            <a href="{{ url_for('index') }}">Home</a><br>
+            {% if session['usuario'] %}
+                <a href="{{ url_for('cuenta') }}">Pagina personal</a><br>
+            {% endif%}
+            <a href="{{ url_for('cesta') }}">Cesta</a><br>
+        </ul>
+        {% block menu%} {% endblock %}
+    </div>
+    
+    <div id="content">
+        {% block content%} {% endblock %}
+    </div>
+    
+    <div id="footer">
+        {% block footer%}
+            <br>
+            By Victor Lizana Sanchez and Asier Lopez Alonso
+        {% endblock %}
+    </div>
+</body>
+</html>
