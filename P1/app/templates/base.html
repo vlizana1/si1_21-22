@@ -26,13 +26,13 @@
     </div>
     
     <div id="menu">
-        Enlaces:
+        <strong> Enlaces:</strong>
         <ul>
-            <a href="{{ url_for('index') }}">Home</a><br>
+            <li><a href="{{ url_for('index') }}">Home</a></li>
             {% if session['usuario'] %}
-                <a href="{{ url_for('cuenta') }}">Pagina personal</a><br>
+                <li><a href="{{ url_for('cuenta') }}">Pagina personal</a></li>
             {% endif%}
-            <a href="{{ url_for('cesta') }}">Cesta</a><br>
+            <li><a href="{{ url_for('cesta') }}">Cesta</a></li>
         </ul>
         {% block menu%} {% endblock %}
     </div>

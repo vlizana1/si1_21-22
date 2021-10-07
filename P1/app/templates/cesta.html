@@ -9,7 +9,7 @@
 {% endblock %}
 
 {% block content %}
-    <div id="contentCornerTR" style="float:right;height:80px;text-align:center;">
+    <div class="contentCornerTR" style="float:right;height:80px;text-align:center;">
         {% if not session['usuario'] %}
             <b>you can't finish the purchase<br>
             if you have not registered</b>
@@ -32,9 +32,9 @@
         <br>
         <ul>
         {% for dupla in catalogue %}
-            <div id="divPosterYTexto">
-                <div id = "divPosterPequenio">
-                    <img id="posterPequenio" src="{{ url_for('static', filename=dupla.movie.poster) }}" alt="Poster {{ dupla.movie.titulo }}">
+            <div class="divPosterYTexto">
+                <div class = "divPosterPequenio">
+                    <img class="posterPequenio" src="{{ url_for('static', filename=dupla.movie.poster) }}" alt="Poster {{ dupla.movie.titulo }}">
                 </div>
                 <div id="divPeliculaInfo">
                     <b><a href="{{ url_for('showMovie', slugNameMovie=dupla.movie.slug_name) }}">{{ dupla.movie.titulo }}</a></b><br>

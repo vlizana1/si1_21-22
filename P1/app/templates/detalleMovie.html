@@ -10,14 +10,14 @@
 
 {% block content %}
     {% if movie %}
-        <div id="contentCornerTR">
+        <div class="contentCornerTR">
             <form action="" method="post">
                 <input name="cuantity" type="text" style="width:150px;text-align:center;" placeholder="Cuantity"><br>
                 <input type="submit" value="AddToCart" style="width:168px;text-align:center;">
             </form>
         </div>
         
-        <img id="posterGrande" src="{{ url_for('static', filename=movie.poster) }}" alt="Poster {{ movie.title }}"><br>
+        <img class="posterGrande" src="{{ url_for('static', filename=movie.poster) }}" alt="Poster {{ movie.title }}"><br>
         Director: {{ movie.director }}<br>
         Categoria: {{ movie.categoria }}<br>
         Anio: {{ movie.año }}<br>
@@ -26,7 +26,7 @@
         <br>
         Actores:<br>
         {% for actor in movie.actores %}
-            <ul><img id="posterPequenio" src="{{ url_for('static', filename=actor.foto) }}" alt="Actor {{ actor.nombre }}">
+            <ul><img class="posterPequenio" src="{{ url_for('static', filename=actor.foto) }}" alt="Actor {{ actor.nombre }}">
             <strong>{{ actor.personaje }}</strong> / {{ actor.nombre }}</ul>
         {% endfor %}
     {% else %}

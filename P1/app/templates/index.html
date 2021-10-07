@@ -26,11 +26,11 @@
     {% endif %}
     <br>
     {% for item in movies %}
-        <div id="divPosterYTexto">
-            <div id = "divPosterPequenio">
-                <img id="posterPequenio" src="{{ url_for('static', filename=item.poster) }}" alt="Poster {{ item.titulo }}">
+        <div class="divPosterYTexto">
+            <div class = "divPosterPequenio">
+                <img class="posterPequenio" src="{{ url_for('static', filename=item.poster) }}" alt="Poster {{ item.titulo }}">
             </div>
-            <div id="divPeliculaInfo">
+            <div class="divPeliculaInfo">
                 <a href="{{ url_for('showMovie', slugNameMovie=item.slug_name)}}">{{ item.titulo }}</a></li>
             </div>
         </div>
