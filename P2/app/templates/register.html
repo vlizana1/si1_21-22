@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% block title %}
+    {{ title }}
+{% endblock%}
+
+{% block header %}
+    <h1>Sign Up</h1>
+{% endblock %}
+
+{% block content %}
+    <h1>Sign Up</h1>
+    <form action="" method="post" novalidate>
+        <label><b>Username</b></label>
+        <input name="username" type="text" placeholder="Enter username">
+        <br>
+        <label><b>Contraseña</b></label>
+        <input name="password" type="password" placeholder="Enter password">
+        <br>
+        <label><b>Email</b></label>
+        <input name="email" type="text" placeholder="Enter email">
+        <br>
+        <label><b>Tarjeta de Credito</b></label>
+        <input name="creditCard" type="text" placeholder="Enter tarjeta de credito">
+        <br>
+        
+        <label><b>¿Guardar la cesta anonima?</b></label>
+        <input type="checkbox" name="guardarCesta">
+        <br>
+        
+        <input type="submit" value="Register"><br>
+        <br>
+        {% if mensaje %}
+            {{ mensaje }}
+        {% endif%}
+    </form>
+{% endblock%}

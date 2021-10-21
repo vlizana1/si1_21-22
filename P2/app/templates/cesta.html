@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+
+{% block title %}
+    {{ title }}
+{% endblock%}
+
+{% block header %}
+    {{ title }}
+{% endblock %}
+
+{% block content %}
+    <div class="contentCornerTR" style="float:right;height:80px;text-align:center;">
+        {% if not session['usuario'] %}
+            <b>you can't finish the purchase<br>
+            if you have not registered</b>
+        {% else %}
+            <form action="" method="post">
+                <input name="TermComp" type="submit" value="Terminar compra">
+            </form>
+        {% endif%}
+    </div>
+    <br>
+    {% if mensaje %}
+        {{ mensaje }}<br>
+    {% else %}
+        <br>
+    {% endif %}
+    <br>
+    {% if catalogue %}
+        Valor de la cesta: {{ precioCesta }}<br>
+        Catalogo:<br>
+        <br>
+        <ul>
+        {% for dupla in catalogue %}
+            <div class="divPosterYTexto">
+                <div class = "divPosterPequenio">
+                    <img class="posterPequenio" src="{{ url_for('static', filename=dupla.movie.poster) }}" alt="Poster {{ dupla.movie.titulo }}">
+                </div>
+                <div id="divPeliculaInfo">
+                    <b><a href="{{ url_for('showMovie', slugNameMovie=dupla.movie.slug_name) }}">{{ dupla.movie.titulo }}</a></b><br>
+                    Cantidad: {{ dupla.cuantity }}, Precio por unidad: {{ dupla.movie.precio }}<br>
+                    
+                    <form action="" method="post">
+                        <input name="newCuantity" type="text" style="text-align:center;width:130px" placeholder="Enter new cuantity">
+                        <input name="slugNameMovie" value={{dupla.movie.slug_name}} type="hidden">
+                        <input type="submit" value="ChangeCuantity">
+                        <br>
+                        <a href="{{ url_for('quitarDeCesta', slugNameMovie=dupla.movie.slug_name) }}">Remove from cart</a>
+                    </form>
+                </div>
+            </div>
+            <br>
+        {% endfor %}
+    {% else %}
+        Cesta vacia
+    {% endif %}
+    </ul>
+{% endblock %}

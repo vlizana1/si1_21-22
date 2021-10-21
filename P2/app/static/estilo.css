@@ -1,0 +1,112 @@
+/*
+ * Estilos de 'base.html'
+ */
+
+body {
+   background-color: rgb(121, 146, 255);
+   margin: 20px;
+}
+
+#header {
+    display: flex;
+    min-height: 90px;
+}
+
+#headerLeft {
+    width: 85%;
+    float: left;
+    text-align: left;
+}
+
+#headerRight {
+    width: 15%;
+    float: right;
+    text-align: center;
+}
+
+#menu {
+    background-color: rgb(158, 176, 255);
+    width: 15%;
+    height: 100%;
+    float: left;
+    overflow-y: scroll;
+    border: 10px solid transparent;
+    box-sizing: border-box;
+}
+
+#content {
+    background-color: rgb(193, 204, 255);
+    width: 83%;
+    float: right;
+    overflow-y: scroll;
+    border: 10px solid transparent;
+    box-sizing: border-box;
+    margin-left: 2%;
+}
+
+#footer {
+    position: relative;
+    bottom: 0;
+    height: 40px;
+    clear: both;
+    text-align: center;
+}
+
+/*
+ * Generales
+ */
+
+.contentCornerTR {
+    float: right;
+    text-align: center;
+}
+
+.posterGrande {
+    width: 300px;
+    height: 400px;
+}
+
+.posterPequenio {
+    width: 90px;
+    height: 90px;
+}
+
+.divPosterYTexto {
+    display: flex;
+    min-height: 90px;
+}
+
+.divPosterPequenio {
+    float: left;
+    width: 90px;
+    height: 90px;
+}
+
+.divPeliculaInfo {
+    float: left;
+    height: 90px;
+    text-align: left;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+
+{% block title %}
+    {{ title }}
+{% endblock%}
+
+{% block header %}
+    {{ Cuenta }}
+{% endblock %}
+
+{% block content %}
+    <b>Nombre de Usuario: </b>{{ datos.username }}<br>
+    <b>Correo electronico: </b>{{ datos.email }}<br>
+    <b>Saldo: </b>{{ datos['budget'] }}<br>
+    <br>
+    <form action="" method="post" novalidate>
+        <label><b>Introducir saldo: </b></label>
+        <input name="newbudget" type="text" placeholder="Cantidad a aniadir">
+        <input type="submit" value="Aniadir"><br>
+    </form>
+    
+    {% if movies %}
+        <ul>
+        {% for item in movies %}
+            <b>{{ item.titulo }}</b>:
+            <ul>
+                Cantidad: {{ item.cantidad }}<br>
+                Precio unidad:   {{ item.precio }}<br>
+            </ul>
+            <br>
+        {% endfor %}
+        </ul>
+    {% endif %}
+{% endblock %}
