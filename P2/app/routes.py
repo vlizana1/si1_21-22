@@ -106,7 +106,7 @@ def showMovie(movieId):
         return render_template('detalleMovie.html', title="Not found")
 
     if 'cuantity' in request.form and request.form['cuantity'] != "":
-        if session['usuario']:
+        if 'usuario' in session:
             username = session['usuario']
         else:
             username = "ANONYMOUS"
@@ -115,7 +115,8 @@ def showMovie(movieId):
     return render_template('detalleMovie.html', movie=movie, title=movie['titulo'])
 
 
-
+@app.route('/cesta', methods=['GET', 'POST'])
+def cesta():
 
 
 

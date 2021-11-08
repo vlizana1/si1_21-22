@@ -292,7 +292,21 @@ def add_to_cart(username, movieId, quantity):
                         str(quantity))
 
         # Actualiza el precio del carrito
-        ########################### COMPLETAR ###########################
+        aux = list(db_conn.execute(
+            "SELECT orderid, netamount, tax, totalamount " \
+            "FROM orders " \
+            "WHERE orderid = " + order_id))
+        net = aux[0]["netamount"]
+        tax = aux[0]["tax"]
+        total = aux[0]["totalamount"]
+
+        net = net + quantity * price
+        total = net * tax + net
+
+        db_conn.execute(
+            "UPDATE orders " \
+            "SET netamount = " str(net) + ", totalamount = " + set(total) \
+            " WHERE ordersid = " + str(order_id))
 
         db_conn.close()
         return order_id
