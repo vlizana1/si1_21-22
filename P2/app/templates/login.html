@@ -10,6 +10,9 @@
 
 {% block content %}
     <h1>Sign In</h1>
+    {% if msg %}
+        <strong>{{ msg }}</strong>
+    {% endif %}
     <form action="" method="post" novalidate>
         <label><b>Username</b></label>
         <input name="username" type="text" placeholder="Enter username">

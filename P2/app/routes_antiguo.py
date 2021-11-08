@@ -259,18 +259,6 @@ def register():
         print(request.referrer, file=sys.stderr)
         return render_template('register.html', title="Sign Up")
 
-@app.route('/showMovie/<string:slugNameMovie>', methods=['GET', 'POST'])
-def showMovie(slugNameMovie):
-    catalogue = leerCatalogue('catalogue/catalogue.json', 'peliculas')
-    
-    for movie in catalogue['peliculas']:
-        if slugify(movie['titulo']) == slugNameMovie:
-            if 'cuantity' in request.form and request.form['cuantity'] != "":
-                print("Aniadiendo " + request.form['cuantity'] + " a " + slugNameMovie)
-                aniadirACesta(slugNameMovie, request.form['cuantity'])
-            return render_template('detalleMovie.html', movie=movie, title=movie['titulo'])
-    
-    return render_template('detalleMovie.html', title="Not found")
 
 @app.route('/cesta', methods=['GET', 'POST'])
 def cesta():

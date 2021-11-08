@@ -43,14 +43,27 @@ def list_movies(name_filter=None, genre_filter=None):
         db_conn = None
         db_conn = db_engine.connect()
 
-        query = "SELECT MV.movieid, MV.movietitle, GR.movieid, GR.genre \
-                 FROM imdb_movies AS MV, imdb_moviegenres AD GR \
-                 WHERE MV.movieid = GR.movieid "
-        if name_filter != None:
-            query += "AND lower(MV.movietitle) like '%%" + str(name_filter) + "%%' "
+        # Crea el SELECT
+        query = "SELECT MV.movietitle, MV.movieid"
         if genre_filter != None:
-            query += "AND GR.genre = '" + str(genre_filter) + "' "
-        query += "ORDER BY MV.movietitle"
+            query += ", GR.movieid, GR.genre"
+
+        # Crea el FROM
+        query += " FROM imdb_movies AS MV"
+        if genre_filter != None:
+            query += ", imdb_moviegenres AD GR"
+
+        # Crea el WHERE
+        if genre_filter != None:
+            query += " WHERE MV.movieid = GR.movieid \
+                      AND GR.genre = '" + str(genre_filter) + "' "
+        if name_filter != None:
+            if genre_filter == None:
+                query += " WHERE"
+            else:
+                query += " AND"
+            lower_name_filter = name_filter.lower()
+            query += " lower(MV.movietitle) like '%%" + str(lower_name_filter) + "%%' "
 
         list_all_movies = list(db_conn.execute(query))
         db_conn.close()
@@ -67,6 +80,29 @@ def list_movies(name_filter=None, genre_filter=None):
         return None
 
 
+# Devuelve una pelicula
+def get_movie(movieid):
+    try:
+        db_conn = None
+        db_conn = db_engine.connect()
+        movies = list(db_conn.execute("SELECT * "
+                                      "FROM imdb_movies "
+                                      "WHERE movieid = '" + str(movieid) + "'"))
+        db_conn.close()
+        if len(movies) == 1:
+            return movies[0]
+        else:
+            return None
+    except Exception:
+        if db_conn is not None:
+            db_conn.close()
+        print("Exception in DB access:")
+        print("-" * 60)
+        traceback.print_exc(file=sys.stderr)
+        print("-" * 60)
+    return None
+
+
 # Devuelve una lista de todos lo generos
 def list_genres():
     try:
@@ -74,8 +110,7 @@ def list_genres():
         db_conn = db_engine.connect()
         genres = list(db_conn.execute("SELECT genre "
                                       "FROM imdb_moviegenres "
-                                      "GROUP BY genre "
-                                      "ORDER BY genre"))
+                                      "GROUP BY genre"))
         db_conn.close()
         return genres
     except Exception:
@@ -85,6 +120,7 @@ def list_genres():
         print("-" * 60)
         traceback.print_exc(file=sys.stderr)
         print("-" * 60)
+    return None
 
 
 ## AUTHENTICATIONS ##
@@ -108,6 +144,34 @@ def get_user(username, password):
         print("-" * 60)
 
 	return None
+
+
+######################################## COMPLETAR ########################################
+def create_user(username):
+    try:
+        # Conecta con la base de datos
+        db_conn = None
+        db_conn = db_engine.connect()
+
+        # Crea el id del cliente
+        customer_id = list(db_conn.execute("SELECT COUNT(customerid) "
+                                           "as c FROM customers"))
+        customer_id = int(customer_id[0].c) + 1
+
+        # Crea el id de la tarheta de credito
+        creditcard_id = list(db_conn.execute("SELECT COUNT(creditcard_id)"
+                                             " as c FROM creditcards"))
+        creditcard_id = int(creditcard_id[0].c) + 1
+
+    except Exception:
+        if db_conn is not None:
+            db_conn.close()
+        print("Exception in DB access:")
+        print("-" * 60)
+        traceback.print_exc(file=sys.stderr)
+        print("-" * 60)
+
+        return None
 
 
 # Indica si existe un username
@@ -160,8 +224,86 @@ def email_exists(email):
 
 ## CARRITO ##
 
+# Crea un carrito
+def get_or_create_cart(user_id):
+    try:
+        db_conn = None
+        db_conn = db_engine.connect()
+
+        # Comprueba si hay algun carrito sin finalizar
+        orders = list(db_conn.execute("SELECT orderid, status " \
+                                      "FROM orders " \
+                                      "WHERE customerid = " + str(user_id) + \
+                                      " AND status = 'ON'")
+        # Si no hay ningun carrito abierto lo crea
+        if len(orders) == 0:
+            order_id = list(db_conn.execute("SELECT COUNT(orderid) as c 
+                                        "FROM orders"))
+            order_id = int(order_id[0].c) + 1
+            db_conn.execute("INSERT INTO orders (orderid, customerid, " \
+                            "orderdate, netamount, totalamount, status) VALUES " \
+                            "(" + str(order_id) + ", " + str(user_id) + \
+                            ", now(), 0, 0, 'ON')")
+        else:
+            order_id = orders[0]["orderid"]
+
+        db_conn.close()
+        return order_id
+    except Exception:
+        if db_conn is not None:
+            db_conn.close()
+        print("Exception in DB access:")
+        print("-" * 60)
+        traceback.print_exc(file=sys.stderr)
+        print("-" * 60)
+    return None
 
 
+# Aniade una pelicula al carrito
+def add_to_cart(username, movieId, quantity):
+    try:
+        db_conn = None
+        db_conn = db_engine.connect()
+
+        # Obtiene el producto
+        prod_id = list(db_conn.execute("SELECT prod_id, movieid, price " \
+                                       "FROM products " \
+                                       "WHERE movieid = " + str(movieId)))
+        if len(prod_id) < 1:
+            return None
+
+        # Averigua el precio y el id
+        price = prod_id[0]["price"]
+        prod_id = prod_id[0]["prod_id"]
+
+        # Averigua el id del cliente
+        user_id = list(db_conn.execute("SELECT * FROM customers "
+                                       "WHERE username='" + username + "'"))
+        user_id = user_id[0]["customerid"]
+
+        # Crea u obtiene un carrito abierto
+        db_conn.close()
+        order_id = get_or_create_cart(user_id)
+        db_conn = db_engine.connect()
+
+        db_conn.execute("INSERT INTO ordertail (orderid, prod_id, price, " \
+                        "quantity) VALUES (" + str(order_id) + ", " + \
+                        str(prod_id) + ", " + str(price) + ", " + \
+                        str(quantity))
+
+        # Actualiza el precio del carrito
+        ########################### COMPLETAR ###########################
+
+        db_conn.close()
+        return order_id
+    except Exception:
+        if db_conn is not None:
+            db_conn.close()
+        print("Exception in DB access:")
+        print("-" * 60)
+        traceback.print_exc(file=sys.stderr)
+        print("-" * 60)
+    return None
 
 
 

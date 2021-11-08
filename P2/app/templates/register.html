@@ -12,24 +12,25 @@
     <h1>Sign Up</h1>
     <form action="" method="post" novalidate>
         <label><b>Username</b></label>
-        <input name="username" type="text" placeholder="Enter username">
-        <br>
+        <input name="username" type="text" placeholder="Enter username"><br>
+        <strong>{{ msg['username'] }}</strong><br>
+        
         <label><b>Contraseña</b></label>
-        <input name="password" type="password" placeholder="Enter password">
-        <br>
+        <input name="password" type="password" placeholder="Enter password"><br>
+        <strong>{{ msg['password'] }}</strong><br>
+        
         <label><b>Email</b></label>
-        <input name="email" type="text" placeholder="Enter email">
-        <br>
+        <input name="email" type="text" placeholder="Enter email"><br>
+        <strong>{{ msg['email'] }}</strong><br>
+        
         <label><b>Tarjeta de Credito</b></label>
         <input name="creditCard" type="text" placeholder="Enter tarjeta de credito">
-        <br>
         
         <label><b>¿Guardar la cesta anonima?</b></label>
-        <input type="checkbox" name="guardarCesta">
-        <br>
+        <input type="checkbox" name="guardarCesta"><br>
         
-        <input type="submit" value="Register"><br>
-        <br>
+        <input type="submit" value="Register"><br><br>
+        
         {% if mensaje %}
             {{ mensaje }}
         {% endif%}

@@ -18,7 +18,7 @@
             <select name="movieCategory">
                     <option value="NONE">-------</option> 
                 {% for cat in categories %}
-                    <option value="{{ cat.genre }}">{{ cat.genre }}</option> 
+                    <option value="{{ cat['genre'] }}">{{ cat['genre'] }}</option> 
                 {% endfor %}
             </select>
             <input type="submit" value="SearchMovie">
@@ -28,10 +28,10 @@
     {% for movie in movies %}
         <div class="divPosterYTexto">
             <div class = "divPosterPequenio">
-                <img class="posterPequenio" src="{{ url_for('static', filename=item.poster) }}" alt="Poster {{ item.titulo }}">
+                <img class="posterPequenio" src="{{ url_for('static', filename=movie['MV.movieid']) }}" alt="Poster {{ movie['MV.movieid'] }}">
             </div>
             <div class="divPeliculaInfo">
-                <a href="{{ url_for('showMovie', movieId=movie.id)}}">{{ movie.movietitle }}</a></li>
+                <a href="{{ url_for('showMovie', movieId=movie['MV.movieid')}}">{{ movie['MV.movietitle'] }}</a></li>
             </div>
         </div>
         <br>

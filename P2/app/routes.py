@@ -18,7 +18,7 @@ def index():
     print (url_for('static', filename='estilo.css'), file=sys.stderr)
     cabecera = ""
     
-    # Establece el fintro por genero/categoria, si hay
+    # Establece el filtro por genero/categoria, si hay
     if 'movieCategory' in request.form and request.form['movieCategory'] != "NONE":
         genre_filter = request.form['movieCategory']
         cabecera = " from category '" + request.form['movieCategory'] + "'"
@@ -44,22 +44,25 @@ def index():
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
-    # doc sobre request object en http://flask.pocoo.org/docs/1.0/api/#incoming-request-data
     if 'username' in request.form and 'password' in request.form:
+        # Busca al usuario que encaje con el username y password
         userAux = DB.get_user(request.form['username'], request.form['password'])
+        # Comprueba que exista una coincidencia
         if len(userAux) == 1 and userAux[0].username == request.form['username']:
+            # Actualiza la sesion
             session['usuario'] = request.form['username']
             session.modified = True
+            # Vuelve al index
             return redirect(url_for('index'))
+        # Si no hay coincidencias muestra un error
         else:
-            return render_template('login.html', title="Sign In")
+            return render_template('login.html',
+                                   msg="Username and Password didn't match")
     else:
-        # se puede guardar la pagina desde la que se invoca 
         session['url_origen']=request.referrer
         session.modified=True        
-        # print a error.log de Apache si se ejecuta bajo mod_wsgi
-        print (request.referrer, file=sys.stderr)
-        return render_template('login.html', title = "Sign In")
+        print(request.referrer, file=sys.stderr)
+        return render_template('login.html')
 
 
 @app.route('/logout', methods=['GET', 'POST'])
@@ -68,8 +71,48 @@ def logout():
     return redirect(url_for('index'))
 
 
+"""
 @app.route('/register', methods=['GET', 'POST'])
 def register():
+    if 'username' in request.form and 'password' in request.form and 'email' in request.form and'creditCard' in request.form:
+        if DB.username_exists(request.form['username']) == False:
+            # Valida los campos introducidos
+            validated = True
+            msg = {'username': validarNombre(request.form['username']),
+                   'password': validarPassword(request.form['password']),
+                   'email': validarMail(request.form['email'])}
+            for key in msg.keys():
+                if msg[key] != "OK":
+                    validated = False
+
+            # Si los campos son validos crea al usuario
+            if validated == True:
+                
+            # Si hay algun campo invalido lo indica
+            else:
+                return render_template('register.html', title='Sign Up', msg=msg)
+
+        else:
+            return render_template('login.html',
+                                   msg="User already exist, login to continue:")
+"""
+  
+
+@app.route('/showMovie/<int:movieId>', methods=['GET', 'POST'])
+def showMovie(movieId):
+    movie = DB.get_movie(movieid)
+
+    if movie == None:
+        return render_template('detalleMovie.html', title="Not found")
+
+    if 'cuantity' in request.form and request.form['cuantity'] != "":
+        if session['usuario']:
+            username = session['usuario']
+        else:
+            username = "ANONYMOUS"
+        DB.add_to_cart(username, movieId, int(request.form['cuantity']))
+
+    return render_template('detalleMovie.html', movie=movie, title=movie['titulo'])
 
 
 
@@ -94,16 +137,32 @@ def register():
 
 
 
+#### Validaciones ####
+
+def validarNombre(nombre):
+    if nombre.find(" ") >= 0:
+        return "Username can't contain spaces."
+    else:
+        return "OK"
 
 
+def validarPassword(password):
+    if password.find(" ") >= 0:
+        return "Password can't contain spaces."
+    elif len(password) < 8:
+        return "Username can't contain less than 8 caracters"
+    else:
+        return "OK"
 
 
-
-
-
-
-
-
+def validarMail(mail):
+    pos_arroba = mail.find("@")
+    pos_punto = mail.find(".")
+    
+    if pos_arroba < 1 or pos_punto < pos_arroba + 2 or pos_punto == len(mail) - 1:
+        return "Incorrect mail format: example@example.example"
+    else:
+        return "OK"
 
 
 
