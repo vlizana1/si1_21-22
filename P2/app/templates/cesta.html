@@ -9,7 +9,7 @@
 {% endblock %}
 
 {% block content %}
-    <div class="contentCornerTR" style="float:right;height:80px;text-align:center;">
+    <div class="contentCornerTR"">
         {% if not session['usuario'] %}
             <b>you can't finish the purchase<br>
             if you have not registered</b>
@@ -26,26 +26,30 @@
         <br>
     {% endif %}
     <br>
-    {% if catalogue %}
+    {% if cart %}
         Valor de la cesta: {{ precioCesta }}<br>
-        Catalogo:<br>
+        Peliculas:<br>
         <br>
         <ul>
-        {% for dupla in catalogue %}
+        {% for movie in cart %}
             <div class="divPosterYTexto">
                 <div class = "divPosterPequenio">
-                    <img class="posterPequenio" src="{{ url_for('static', filename=dupla.movie.poster) }}" alt="Poster {{ dupla.movie.titulo }}">
+                    <img class="posterPequenio" src="{{ url_for('static', filename=movie['MV.movieid']) }}" alt="Poster {{ movie['MV.movietitle'] }}">
                 </div>
                 <div id="divPeliculaInfo">
-                    <b><a href="{{ url_for('showMovie', slugNameMovie=dupla.movie.slug_name) }}">{{ dupla.movie.titulo }}</a></b><br>
-                    Cantidad: {{ dupla.cuantity }}, Precio por unidad: {{ dupla.movie.precio }}<br>
+                    <b><a href="{{ url_for('showMovie', movieId=movie['MV.movieid']) }}">{{ movie['MV.movietitle'] }}</a></b><br>
+                    Cantidad: {{ movie['OT.quantity'] }}, Precio por unidad: {{ movie['OT.price'] }}<br>
                     
                     <form action="" method="post">
                         <input name="newCuantity" type="text" style="text-align:center;width:130px" placeholder="Enter new cuantity">
-                        <input name="slugNameMovie" value={{dupla.movie.slug_name}} type="hidden">
+                        <input name="movieId" value={{movie['MV.movieid']}} type="hidden">
                         <input type="submit" value="ChangeCuantity">
                         <br>
-                        <a href="{{ url_for('quitarDeCesta', slugNameMovie=dupla.movie.slug_name) }}">Remove from cart</a>
+                    </form>
+                    <form action="" method="post">
+                        <input name="newCuantity" value=0 type="hidden">
+                        <input name="movieId" value={{movie['MV.movieid']}} type="hidden">
+                        <input type="submit" value="Remove from cart">
                     </form>
                 </div>
             </div>

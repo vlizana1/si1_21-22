@@ -4,7 +4,6 @@ import datetime
 from sqlalchemy import MetaData
 from sqlalchemy import create_engine
 
-######## DataBasa ########
 
 # Configurar el motor de sqlalchemy
 db_engine = create_engine("postgresql://alumnodb:"
@@ -13,9 +12,7 @@ db_engine = create_engine("postgresql://alumnodb:"
 db_meta = MetaData(bind=db_engine)
 
 
-######## Funciones generales ########
-
-#### MOVIES ####
+######## MOVIES ########
 
 # Devuelve toda la informacion sobre todas las peliculas
 def all_movies_info():
@@ -123,7 +120,7 @@ def list_genres():
     return None
 
 
-## AUTHENTICATIONS ##
+######## AUTHENTICATIONS ########
 
 # Devuelve informacion para un usuario con su contrasenia
 def get_user(username, password):
@@ -222,7 +219,7 @@ def email_exists(email):
 	return 'ERR'
 
 
-## CARRITO ##
+######## CARRITO ########
 
 # Crea un carrito
 def get_or_create_cart(user_id):
@@ -249,6 +246,86 @@ def get_or_create_cart(user_id):
 
         db_conn.close()
         return order_id
+    except Exception:
+        if db_conn is not None:
+            db_conn.close()
+        print("Exception in DB access:")
+        print("-" * 60)
+        traceback.print_exc(file=sys.stderr)
+        print("-" * 60)
+    return None
+
+
+# Devuelve al carrito abierto
+def get_actual_cart(username):
+    try:
+        db_conn = None
+        db_conn = db_engine.connect()
+
+        cart = list(db_conn.execute(
+            "SELECT CM.username, OD.status, OD.totalamount, OT.prod_id, " \
+            "OT.price, OT.quantity, MV.movieid, MV.movietitle " \
+            "FROM customers AS CM NATURAL JOIN " \
+            "orders AS OD NATURAL JOIN " \
+            "ordertail AS OT NATURAL JOIN " \
+            "products NATURAL JOIN " \
+            "imdb_movies AS MV " \
+            "WHERE CM.username = '" + username + "' " \
+            "AND OD.status = 'ON' " \
+            "GROUP BY OT.prod_id"))
+
+        db_conn.close()
+        return cart
+    except Exception:
+        if db_conn is not None:
+            db_conn.close()
+        print("Exception in DB access:")
+        print("-" * 60)
+        traceback.print_exc(file=sys.stderr)
+        print("-" * 60)
+    return None
+
+
+# Termina la compra del carrito
+def end_cart(username):
+    try:
+        db_conn = None
+        db_conn = db_engine.connect()
+
+        # Obtiene informacion sobre el usuario y el pedido
+        info = list(db_conn.execute(
+            "SELECT CM.username, CM.income, OR.orderid, OR.totalamount, " \
+            "OR.status " \
+            "FROM customers AS CM NATURAL JOIN orders AS OR " \
+            "WHERE CM.username = '" + usesrname + "' " \
+            "AND OR.status = 'ON'"))
+
+        # Si el carrito esta vacio lo indica
+        if len(info) == 0:
+            return "Carrito vacio"
+
+        info = info[0]
+
+        # Calcula el saldo restante
+        left = info["CM.income"] - info["OR.totalamount"]
+        # Si el saldo es insuficiente lo indica
+        if left < 0:
+            return "Saldo insuficiente"
+
+        # Actualiza el saldo del usuario
+        db_conn.execute(
+            "UPDATE customers " \
+            "SET income = " + str(left) + \
+            " WHERE username = '" + str(username) + "'")
+
+        # Actualiza el estado del pedido a acabado
+        db_conn.execute(
+            "UPDATE orders " \
+            "SET status = 'ENDED' " \
+            "WHERE orderid = " + str(info["OR.orderid"]))
+
+        db_conn.close()
+        return None
     except Exception:
         if db_conn is not None:
             db_conn.close()
@@ -300,12 +377,12 @@ def add_to_cart(username, movieId, quantity):
         tax = aux[0]["tax"]
         total = aux[0]["totalamount"]
 
-        net = net + quantity * price
+        net = net + int(quantity) * price
         total = net * tax + net
 
         db_conn.execute(
             "UPDATE orders " \
-            "SET netamount = " str(net) + ", totalamount = " + set(total) \
+            "SET netamount = " + str(net) + ", totalamount = " + set(total) \
             " WHERE ordersid = " + str(order_id))
 
         db_conn.close()
@@ -320,8 +397,59 @@ def add_to_cart(username, movieId, quantity):
     return None
 
 
+def mod_ordertail(username, movieid, quantity):
+    try:
+        db_conn = None
+        db_conn = db_engine.connect()
 
+        # Encuentra y obtiene informacion del pedido
+        info = list(db_conn.execute(
+            "SELECT CM.username, OR.orderid, OR.status, OR.netamount, " \
+            "OR.tax, OT.prod_id, OT.price, OT.quantity, PD.movieid " \
+            "FROM customers AS CM NATURAL JOIN orders AS OR NATURAL JOIN " \
+            "ordertail AS OT NATURAL JOIN products AS PD " \
+            "WHERE CM.username = '" + username + "' " \
+            "AND OR.status = 'ON' " \
+            "AND PD.movieid = " + str(movieid)))
+        info = info[0]
 
+        # Recalcula el nuevo precio
+        netamount = info["OR.netamount"]
+        netamount -= info["OT.price"] * info["OT.quantity"]
+        netamount += info["OT.price"] * quantity
+        totalamount = netamount + netamount * info["tax"]
+
+        # Actualiza el precio del pedido
+        db_conn.execute(
+            "UPDATE orders " \
+            "SET netamount = " + str(netamount) + ", " \
+            "totalamount = " + str(totalamount) + \
+            " WHERE orderid = " + str(info["OR.orderid"]))
+
+        # Si la cantidad es 0 elimina el producto
+        if quantity == 0:
+            db_conn.execute(
+                "DELETE FROM ordertail " \
+                "WHERE orderid = " + str(info["OR.orderid"]) + \
+                " AND prod_id = " + str(info["OT.prod_id"]))
+        # Actualiza la cantidad
+        else:
+            db_conn.execute(
+                "UPDATE ordertail " \
+                "SET quantity = " + str(quantity) + \
+                "  WHERE orderid = " + str(info["OR.orderid"]) + \
+                " AND prod_id = " + str(info["OT.prod_id"]))
+
+        db_conn.close()
+        return
+    except Exception:
+        if db_conn is not None:
+            db_conn.close()
+        print("Exception in DB access:")
+        print("-" * 60)
+        traceback.print_exc(file=sys.stderr)
+        print("-" * 60)
+    return None
 
 
 

@@ -117,15 +117,28 @@ def showMovie(movieId):
 
 @app.route('/cesta', methods=['GET', 'POST'])
 def cesta():
+    if 'usuario' in session:
+        username = session['usuario']
+        title="Cesta de " + session['usuario']
+    else:
+        username = "Anonymous"
+        title = "Cesta anonima"
 
+    if 'newCuantity' in request.form:
+        DB.mod_ordertail(session['usuario'],
+                         request.form['movieId'],
+                         request.form['newCuantity'])
 
+    if 'TermComp' in request.form:
+        msg = DB.end_cart(session['usuario'])
 
+    cart = DB.get_actual_cart(username)
 
-
-
-
-
-
+    return render_template('cesta.html',
+                           title=title,
+                           cart=cart,
+                           precioCesta=cart[0]["OD.totalamount"]
+                           mensaje=msg)
 
 
 
