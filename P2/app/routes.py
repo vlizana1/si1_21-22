@@ -9,7 +9,7 @@ import os
 import sys
 import shutil
 import hashlib
-import database as DB
+from . import database as DB
 
 
 @app.route('/', methods=['GET', 'POST'])
@@ -33,7 +33,9 @@ def index():
         name_filter = None
     
     # Obtiene la lista de peliculas
-    movies = DB.list_movies(name_filter=name_filter, genre_filter=genre_filter)
+    movies = DB.list_movies(name_filter=name_filter,
+                            genre_filter=genre_filter,
+                            lim=20)
     
     # Obtiene la lista de generos
     categories = DB.list_genres()
@@ -137,7 +139,7 @@ def cesta():
     return render_template('cesta.html',
                            title=title,
                            cart=cart,
-                           precioCesta=cart[0]["OD.totalamount"]
+                           precioCesta=cart[0]["OD.totalamount"],
                            mensaje=msg)
 
 

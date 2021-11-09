@@ -35,7 +35,7 @@ def all_movies_info():
 
 
 # Devuelve una lista de todas las peliculas
-def list_movies(name_filter=None, genre_filter=None):
+def list_movies(name_filter=None, genre_filter=None, lim=None):
     try:
         db_conn = None
         db_conn = db_engine.connect()
@@ -61,6 +61,9 @@ def list_movies(name_filter=None, genre_filter=None):
                 query += " AND"
             lower_name_filter = name_filter.lower()
             query += " lower(MV.movietitle) like '%%" + str(lower_name_filter) + "%%' "
+
+        if lim != None:
+            query += "LIMIT " + str(lim)
 
         list_all_movies = list(db_conn.execute(query))
         db_conn.close()
@@ -140,7 +143,7 @@ def get_user(username, password):
         traceback.print_exc(file=sys.stderr)
         print("-" * 60)
 
-	return None
+    return None
 
 
 def get_user_minor_info(username):
@@ -161,8 +164,7 @@ def get_user_minor_info(username):
         print("-" * 60)
         traceback.print_exc(file=sys.stderr)
         print("-" * 60)
-
-	return None
+    return None
 
 
 ######################################## COMPLETAR ########################################
@@ -189,8 +191,7 @@ def create_user(username):
         print("-" * 60)
         traceback.print_exc(file=sys.stderr)
         print("-" * 60)
-
-        return None
+    return None
 
 
 # Indica si existe un username
@@ -213,7 +214,7 @@ def username_exists(username):
         print("-" * 60)
         traceback.print_exc(file=sys.stderr)
         print("-" * 60)
-	return None
+    return None
 
 
 # Indica si existe un email
@@ -237,8 +238,7 @@ def email_exists(email):
         print("-" * 60)
         traceback.print_exc(file=sys.stderr)
         print("-" * 60)
-
-	return None
+    return None
 
 
 ######## CARRITO ########
@@ -253,11 +253,11 @@ def get_or_create_cart(user_id):
         orders = list(db_conn.execute("SELECT orderid, status " \
                                       "FROM orders " \
                                       "WHERE customerid = " + str(user_id) + \
-                                      " AND status = 'ON'")
+                                      " AND status = 'ON'"))
         # Si no hay ningun carrito abierto lo crea
         if len(orders) == 0:
-            order_id = list(db_conn.execute("SELECT COUNT(orderid) as c 
-                                        "FROM orders"))
+            order_id = list(db_conn.execute("SELECT COUNT(orderid) as c " \
+                                            "FROM orders"))
             order_id = int(order_id[0].c) + 1
             db_conn.execute("INSERT INTO orders (orderid, customerid, " \
                             "orderdate, netamount, totalamount, status) VALUES " \
@@ -404,7 +404,7 @@ def add_to_cart(username, movieId, quantity):
 
         db_conn.execute(
             "UPDATE orders " \
-            "SET netamount = " + str(net) + ", totalamount = " + set(total) \
+            "SET netamount = " + str(net) + ", totalamount = " + set(total) + \
             " WHERE ordersid = " + str(order_id))
 
         db_conn.close()
@@ -476,7 +476,7 @@ def mod_ordertail(username, movieid, quantity):
 
 
 # Devuelve el historial de pedidos
-def get_historial(usesrname)
+def get_historial(usesrname):
     try:
         db_conn = None
         db_conn = db_engine.connect()
@@ -497,9 +497,9 @@ def get_historial(usesrname)
         for i in info:
             id = i["OR.orderid"]
             if id not in historial:
-                historial[id] = {"date" = i["OR.orderdate"]
-                                 "price" = i["OR.totalamount"]
-                                 "movies" = []}
+                historial[id] = {"date": i["OR.orderdate"],
+                                 "price": i["OR.totalamount"],
+                                 "movies": []}
             historial[id]["movies"].append({"title": i["MV.movietitle"],
                                             "id": i["MV.movieid"],
                                             "quantity": i["OT.quantity"],
