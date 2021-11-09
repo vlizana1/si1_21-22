@@ -1,0 +1,6 @@
+Ejecutar app:
+    $ python3 -m app
+
+Comandos para crear y poblar la base de datos:
+    $ createdb -U alumnodb -h 127.0.0.1 si1
+    $ gunzip -c dump_v1.4.sql.gz | psql -U alumnodb -h 127.0.0.1 si1
