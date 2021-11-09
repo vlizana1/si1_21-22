@@ -260,25 +260,6 @@ def register():
         return render_template('register.html', title="Sign Up")
 
 
-@app.route('/quitarDeCesta/<string:slugNameMovie>', methods=['GET', 'POST'])
-def quitarDeCesta(slugNameMovie):
-    username = getUsernameActual()
-    
-    cesta = leerCatalogue('usuarios/' + username + '/cesta.json', 'cesta')
-    
-    nuevaCesta = {}
-    peliculas = []
-    for movie in cesta['cesta']:
-        if movie['slug_name'] != slugNameMovie:
-            peliculas.append(movie)
-    
-    nuevaCesta['cesta'] = peliculas
-    
-    with open('app/usuarios/' + username + '/cesta.json', 'w') as file:
-            json.dump(nuevaCesta, file, indent=4)
-    
-    return redirect(url_for('cesta'))
-
 @app.route('/cuenta', methods=['GET', 'POST'])
 def cuenta():
     username = getUsernameActual()
