@@ -260,42 +260,6 @@ def register():
         return render_template('register.html', title="Sign Up")
 
 
-@app.route('/cesta', methods=['GET', 'POST'])
-def cesta():
-    if 'usuario' in session:
-        username = session['usuario']
-        title="Cesta de " + session['usuario']
-    else:
-        username = "Anonymous"
-        title="Cesta anonima"
-    
-    # Si se introduce una nueva cantidad se modifican los datos
-    if 'newCuantity' in request.form:
-        modificarEnCesta(request.form['slugNameMovie'], request.form['newCuantity'])
-    
-    mensaje = ""
-    if 'TermComp' in request.form:
-        mensaje = terminarCompra()
-    
-    cesta_aux = leerCatalogue("usuarios/" + username + "/cesta.json", "cesta")
-    catalogue = leerCatalogue("catalogue/catalogue.json", "peliculas")
-    
-    cesta = []
-    precioCesta = 0.0
-    for pelicula in catalogue['peliculas']:
-        for pelicula_aux in cesta_aux['cesta']:
-            if pelicula_aux['id'] == pelicula['id']:
-                dupla = {}
-                dupla['movie'] = pelicula
-                dupla['cuantity'] = pelicula_aux['cantidad']
-                cesta.append(dupla)
-                precioCesta += float(pelicula['precio']) * int(pelicula_aux['cantidad'])
-    
-    if mensaje != "":
-        return render_template('cesta.html', title=title, catalogue=cesta, precioCesta=precioCesta, mensaje=mensaje)
-    else:
-        return render_template('cesta.html', title=title, catalogue=cesta, precioCesta=precioCesta)
-
 @app.route('/quitarDeCesta/<string:slugNameMovie>', methods=['GET', 'POST'])
 def quitarDeCesta(slugNameMovie):
     username = getUsernameActual()
