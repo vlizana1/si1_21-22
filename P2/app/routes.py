@@ -76,7 +76,15 @@ def logout():
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
-    if 'username' in request.form and 'password' in request.form and 'email' in request.form and'creditCard' in request.form:
+    if 'username' in request.form and \
+    'password' in request.form and \
+    'firstname' in request.form and \
+    'lastname' in request.form and \
+    'email' in request.form and \
+    'creditCard' in request.form and \
+    'country' in request.form and \
+    'city' in request.form and \
+    'addres' in request.form:
         if DB.username_exists(request.form['username']) == False:
             # Valida los campos introducidos
             validated = True
@@ -89,15 +97,38 @@ def register():
 
             # Si los campos son validos crea al usuario
             if validated == True:
-                return render_template('login.html',
+                respuesta = DB.create_user(request.form['username'],
+                                           request.form['password'],
+                                           request.form['firstname'],
+                                           request.form['lastname'],
+                                           request.form['email'],
+                                           request.form['creditCard'],
+                                           request.form['country'],
+                                           request.form['city'],
+                                           request.form['addres'],)
+                # Si hay un error en la BD lo indica
+                if respuesta == None:
+                    return render_template(
+                        'register.html',
+                        title='Sign Up',
+                        mensaje="Error creating customer")
+                # Si el registro se ha completado con exito se redirige
+                else:
+                    return render_template('login.html',
                                        msg="Now you are registered")
             # Si hay algun campo invalido lo indica
             else:
-                return render_template('register.html', title='Sign Up', msg=msg)
-
+                return render_template('register.html',
+                                       title='Sign Up',
+                                       msg=msg)
+        # Si el usuario ya existe se redirige
         else:
             return render_template('login.html',
-                                   msg="User already exist, login to continue:")
+                                   msg="User already exist, try to login:")
+    else:
+        session['url_origen'] = request.referrer
+        session.modified = True
+        return render_template('register.html', title="Sign Up")
   
 
 @app.route('/showMovie/<int:movieId>', methods=['GET', 'POST'])

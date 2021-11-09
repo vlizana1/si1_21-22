@@ -1,6 +1,7 @@
 import sys
 import traceback
-import datetime
+import random
+from datetime import datetime, timedelta
 from sqlalchemy import MetaData
 from sqlalchemy import create_engine
 
@@ -171,8 +172,15 @@ def get_user_minor_info(username):
     return None
 
 
-######################################## COMPLETAR ########################################
-def create_user(username):
+def create_user(username,
+                password, 
+                firstname,
+                lastname,
+                email,
+                creditcard,
+                country,
+                city,
+                addres):
     try:
         # Conecta con la base de datos
         db_conn = None
@@ -183,11 +191,21 @@ def create_user(username):
                                            "as c FROM customers"))
         customer_id = int(customer_id[0].c) + 1
 
-        # Crea el id de la tarheta de credito
-        creditcard_id = list(db_conn.execute("SELECT COUNT(creditcard_id)"
-                                             " as c FROM creditcards"))
-        creditcard_id = int(creditcard_id[0].c) + 1
+        # Se crean datos para simplificar la funcion register
+        expiration = datetime.today() + timedelta(weeks=10)
+        expiration = expiration.strftime('%Y-%m-%d')
 
+        db_conn.execute(
+            "INSERT INTO customers (customerid, firstname, lastname, " \
+            "address1, city, country, creditcardtype, creditcard, " \
+            "creditcardexpiration, username, password) " \
+            "VALUES (" + str(customer_id) + ", " + str(firstname) + ", " + \
+            str(lastname) + ", " + str(addres) + ", " + str(city) + ", " + \
+            str(country) + ", credit, " + str(creditcard) + ", " + \
+            str(expiration) + ", " + str(username) + ", " + \
+            str(password) + ")")
+
+        return customer_id
     except Exception:
         if db_conn is not None:
             db_conn.close()
@@ -393,7 +411,7 @@ def add_to_cart(username, movieId, quantity):
         db_conn.execute("INSERT INTO ordertail (orderid, prod_id, price, " \
                         "quantity) VALUES (" + str(order_id) + ", " + \
                         str(prod_id) + ", " + str(price) + ", " + \
-                        str(quantity))
+                        str(quantity) + ")")
 
         # Actualiza el precio del carrito
         aux = list(db_conn.execute(

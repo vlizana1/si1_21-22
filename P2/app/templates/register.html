@@ -13,26 +13,36 @@
     <form action="" method="post" novalidate>
         <label><b>Username</b></label>
         <input name="username" type="text" placeholder="Enter username"><br>
-        <strong>{{ msg.username }}</strong><br>
-        
+        {% if msg %}{{ msg.username }}{% endif %}<br>
+        <br>
         <label><b>Contraseña</b></label>
         <input name="password" type="password" placeholder="Enter password"><br>
-        <strong>{{ msg.password }}</strong><br>
-        
+        {% if msg %}{{ msg.password }}{% endif %}<br>
+        <br>
+        <label><b>Name</b></label>
+        <input name="firstname" type="text" placeholder="firstname">
+        <input name="lastname" type="text" placeholder="lastname"><br>
+        <br>
         <label><b>Email</b></label>
         <input name="email" type="text" placeholder="Enter email"><br>
-        <strong>{{ msg.email }}</strong><br>
-        
+        {% if msg %}{{ msg.email }}{% endif %}<br>
+        <br>
         <label><b>Tarjeta de Credito</b></label>
-        <input name="creditCard" type="text" placeholder="Enter tarjeta de credito">
+        <input name="creditCard" type="text" placeholder="Enter tarjeta de credito"><br>
+        <br>
         
+        <label><b>Direccion</b></label>
+        <input name="country" type="text" placeholder="pais">/
+        <input name="city" type="text" placeholder="ciudad">/
+        <input name="addres" type="text" placeholder="direccion">/<br>
+        <br>
+        
+        <br>
         <label><b>¿Guardar la cesta anonima?</b></label>
         <input type="checkbox" name="guardarCesta"><br>
-        
-        <input type="submit" value="Register"><br><br>
-        
-        {% if mensaje %}
-            {{ mensaje }}
-        {% endif%}
+        <br>
+        <input type="submit" value="Register"><br>
+        <br>
+        {% if mensaje %}{{ mensaje }}{% endif %}
     </form>
 {% endblock%}
