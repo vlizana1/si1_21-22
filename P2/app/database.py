@@ -143,6 +143,28 @@ def get_user(username, password):
 	return None
 
 
+def get_user_minor_info(username):
+    try:
+        db_conn = None
+        db_conn = db_engine.connect()
+        user = list(db_conn.execute(
+            "SELECT username, firstname, lastname, email, income " \
+            "FROM customers " \
+            "WHERE username = '" + username + "'"))
+
+        db_conn.close()
+        return user[0]
+    except Exception:
+        if db_conn is not None:
+            db_conn.close()
+        print("Exception in DB access:")
+        print("-" * 60)
+        traceback.print_exc(file=sys.stderr)
+        print("-" * 60)
+
+	return None
+
+
 ######################################## COMPLETAR ########################################
 def create_user(username):
     try:
@@ -216,7 +238,7 @@ def email_exists(email):
         traceback.print_exc(file=sys.stderr)
         print("-" * 60)
 
-	return 'ERR'
+	return None
 
 
 ######## CARRITO ########
@@ -397,6 +419,7 @@ def add_to_cart(username, movieId, quantity):
     return None
 
 
+# Modifica o elimina un producto de un pedido
 def mod_ordertail(username, movieid, quantity):
     try:
         db_conn = None
@@ -437,7 +460,7 @@ def mod_ordertail(username, movieid, quantity):
             db_conn.execute(
                 "UPDATE ordertail " \
                 "SET quantity = " + str(quantity) + \
-                "  WHERE orderid = " + str(info["OR.orderid"]) + \
+                " WHERE orderid = " + str(info["OR.orderid"]) + \
                 " AND prod_id = " + str(info["OT.prod_id"]))
 
         db_conn.close()
@@ -452,39 +475,43 @@ def mod_ordertail(username, movieid, quantity):
     return None
 
 
+# Devuelve el historial de pedidos
+def get_historial(usesrname)
+    try:
+        db_conn = None
+        db_conn = db_engine.connect()
 
+        # Obtiene el historial
+        info = list(db_conn.execute(
+            "SELECT CM.username, OR.orderid, OR.orderdate, " \
+            "OR.totalamount, OR.status, OT.price, OT.quantity, " \
+            "MV.movieid, MV.movietitle " \
+            "FROM customers AS CM NATURAL JOIN orders AS OR " \
+            "NATURAL JOIN ordertail AS OT NATURAL JOIN products " \
+            "NATURAL JOIN imdb_movies AS MV " \
+            "WHERE CM.username = '" + username + \
+            " AND OR.status = 'ENDED'"))
 
+        # Agrupa el historial por pedidos
+        historial = {}
+        for i in info:
+            id = i["OR.orderid"]
+            if id not in historial:
+                historial[id] = {"date" = i["OR.orderdate"]
+                                 "price" = i["OR.totalamount"]
+                                 "movies" = []}
+            historial[id]["movies"].append({"title": i["MV.movietitle"],
+                                            "id": i["MV.movieid"],
+                                            "quantity": i["OT.quantity"],
+                                            "price": i["OT.price"]})
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+        db_conn.close()
+        return historial
+    except Exception:
+        if db_conn is not None:
+            db_conn.close()
+        print("Exception in DB access:")
+        print("-" * 60)
+        traceback.print_exc(file=sys.stderr)
+        print("-" * 60)
+    return None

@@ -141,17 +141,21 @@ def cesta():
                            mensaje=msg)
 
 
+@app.route('/cuenta', methods=['GET', 'POST'])
+def cuenta():
+    if 'usuario' in session:
+        historialAux = DB.get_historial(session['usuario'])
+        userInfo = DB.get_user_minor_info(session['usuario'])
+
+        return render_template('cuenta.html',
+                               title="Cuenta",
+                               datos=userInfo,
+                               historial=userInfo)
+    else:
+        return render_template('login.html', title='Sign In')
 
 
-
-
-
-
-
-
-
-
-#### Validaciones ####
+######## Validaciones ########
 
 def validarNombre(nombre):
     if nombre.find(" ") >= 0:
@@ -177,20 +181,3 @@ def validarMail(mail):
         return "Incorrect mail format: example@example.example"
     else:
         return "OK"
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
