@@ -40,30 +40,25 @@ def list_movies(name_filter=None, genre_filter=None, lim=None):
         db_conn = None
         db_conn = db_engine.connect()
 
-        # Crea el SELECT
-        query = "SELECT MV.movietitle, MV.movieid"
+        query = "SELECT MV.movietitle AS title, MV.movieid AS id"
         if genre_filter != None:
-            query += ", GR.movieid, GR.genre"
+            query += ", GR.genre"
 
-        # Crea el FROM
         query += " FROM imdb_movies AS MV"
         if genre_filter != None:
-            query += ", imdb_moviegenres AD GR"
+            query += " NATURAL JOIN imdb_moviegenres AS GR" \
+                     " WHERE GR.genre = '" + str(genre_filter) + "'"
 
-        # Crea el WHERE
-        if genre_filter != None:
-            query += " WHERE MV.movieid = GR.movieid \
-                      AND GR.genre = '" + str(genre_filter) + "' "
         if name_filter != None:
+            lower_name_filter = name_filter.lower()
             if genre_filter == None:
                 query += " WHERE"
             else:
                 query += " AND"
-            lower_name_filter = name_filter.lower()
-            query += " lower(MV.movietitle) like '%%" + str(lower_name_filter) + "%%' "
+            query += " lower(title) like '%%" + str(lower_name_filter) + "%%'"
 
         if lim != None:
-            query += "LIMIT " + str(lim)
+            query += " LIMIT " + str(lim)
 
         list_all_movies = list(db_conn.execute(query))
         db_conn.close()
@@ -81,18 +76,27 @@ def list_movies(name_filter=None, genre_filter=None, lim=None):
 
 
 # Devuelve una pelicula
-def get_movie(movieid):
+def get_movie_info(movieid):
     try:
         db_conn = None
         db_conn = db_engine.connect()
-        movies = list(db_conn.execute("SELECT * "
-                                      "FROM imdb_movies "
-                                      "WHERE movieid = '" + str(movieid) + "'"))
+        movies = list(db_conn.execute(
+            "SELECT MV.movietitle AS title, MV.movieid, " \
+            "MV.year AS date, DR.directorname AS director, " \
+            "ML.language AS language, MG.genre AS genre, PD.price AS price " \
+            "FROM imdb_movies AS MV " \
+            "NATURAL JOIN imdb_directormovies " \
+            "NATURAL JOIN imdb_directors AS DR " \
+            "NATURAL JOIN imdb_movielanguages AS ML " \
+            "NATURAL JOIN imdb_moviegenres AS MG " \
+            "NATURAL JOIN products AS PD " \
+            "WHERE MV.movieid = " + str(movieid) + \
+            " LIMIT 1"))
         db_conn.close()
-        if len(movies) == 1:
-            return movies[0]
-        else:
+        if len(movies) == 0:
             return None
+        else:
+            return movies[0]
     except Exception:
         if db_conn is not None:
             db_conn.close()
@@ -286,7 +290,8 @@ def get_actual_cart(username):
 
         cart = list(db_conn.execute(
             "SELECT CM.username, OD.status, OD.totalamount, OT.prod_id, " \
-            "OT.price, OT.quantity, MV.movieid, MV.movietitle " \
+            "OT.price AS price, OT.quantity AS quantity, MV.movieid AS id, " \
+            " MV.movietitle AS title " \
             "FROM customers AS CM NATURAL JOIN " \
             "orders AS OD NATURAL JOIN " \
             "ordertail AS OT NATURAL JOIN " \

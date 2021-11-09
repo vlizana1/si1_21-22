@@ -18,22 +18,26 @@
             <select name="movieCategory">
                     <option value="NONE">-------</option> 
                 {% for cat in categories %}
-                    <option value="{{ cat['genre'] }}">{{ cat['genre'] }}</option> 
+                    <option value="{{ cat.genre }}">{{ cat.genre }}</option> 
                 {% endfor %}
             </select>
             <input type="submit" value="SearchMovie">
         </form>
     {% endif %}
     <br>
-    {% for movie in movies %}
-        <div class="divPosterYTexto">
-            <div class = "divPosterPequenio">
-                <img class="posterPequenio" src="{{ url_for('static', filename=movie['MV.movieid']) }}" alt="Poster {{ movie['MV.movieid'] }}">
+    {% if movies %}
+        {% for movie in movies %}
+            <div class="divPosterYTexto">
+                <div class = "divPosterPequenio">
+                    <img class="posterPequenio" src="{{ url_for('static', filename=movie.id) }}" alt="Poster {{ movie.id }}">
+                </div>
+                <div class="divPeliculaInfo">
+                    <a href="{{ url_for('showMovie', movieId=movie.id)}}">{{ movie.title }}</a></li>
+                </div>
             </div>
-            <div class="divPeliculaInfo">
-                <a href="{{ url_for('showMovie', movieId=movie['MV.movieid'])}}">{{ movie['MV.movietitle'] }}</a></li>
-            </div>
-        </div>
-        <br>
-    {% endfor %}
+            <br>
+        {% endfor %}
+    {% else %}
+        <strong>NO SE ENCONTRARON PELICULAS</strong>
+    {% endif %}
 {% endblock %}

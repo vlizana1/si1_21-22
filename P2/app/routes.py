@@ -73,7 +73,7 @@ def logout():
     return redirect(url_for('index'))
 
 
-"""
+
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if 'username' in request.form and 'password' in request.form and 'email' in request.form and'creditCard' in request.form:
@@ -89,7 +89,8 @@ def register():
 
             # Si los campos son validos crea al usuario
             if validated == True:
-                
+                return render_template('login.html',
+                                       msg="Now you are registered")
             # Si hay algun campo invalido lo indica
             else:
                 return render_template('register.html', title='Sign Up', msg=msg)
@@ -97,15 +98,11 @@ def register():
         else:
             return render_template('login.html',
                                    msg="User already exist, login to continue:")
-"""
   
 
 @app.route('/showMovie/<int:movieId>', methods=['GET', 'POST'])
 def showMovie(movieId):
-    movie = DB.get_movie(movieid)
-
-    if movie == None:
-        return render_template('detalleMovie.html', title="Not found")
+    movie = DB.get_movie_info(movieId)
 
     if 'cuantity' in request.form and request.form['cuantity'] != "":
         if 'usuario' in session:
@@ -114,7 +111,7 @@ def showMovie(movieId):
             username = "ANONYMOUS"
         DB.add_to_cart(username, movieId, int(request.form['cuantity']))
 
-    return render_template('detalleMovie.html', movie=movie, title=movie['titulo'])
+    return render_template('detalleMovie.html', movie=movie, id=movieId)
 
 
 @app.route('/cesta', methods=['GET', 'POST'])

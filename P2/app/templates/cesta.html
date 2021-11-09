@@ -34,21 +34,21 @@
         {% for movie in cart %}
             <div class="divPosterYTexto">
                 <div class = "divPosterPequenio">
-                    <img class="posterPequenio" src="{{ url_for('static', filename=movie['MV.movieid']) }}" alt="Poster {{ movie['MV.movietitle'] }}">
+                    <img class="posterPequenio" src="{{ url_for('static', filename=movie.id) }}" alt="Poster {{ movie.title }}">
                 </div>
                 <div id="divPeliculaInfo">
-                    <b><a href="{{ url_for('showMovie', movieId=movie['MV.movieid']) }}">{{ movie['MV.movietitle'] }}</a></b><br>
-                    Cantidad: {{ movie['OT.quantity'] }}, Precio por unidad: {{ movie['OT.price'] }}<br>
+                    <b><a href="{{ url_for('showMovie', movieId=movie.id) }}">{{ movie.title }}</a></b><br>
+                    Cantidad: {{ movie.quantity }}, Precio por unidad: {{ movie.price }}<br>
                     
                     <form action="" method="post">
                         <input name="newCuantity" type="text" style="text-align:center;width:130px" placeholder="Enter new cuantity">
-                        <input name="movieId" value={{movie['MV.movieid']}} type="hidden">
+                        <input name="movieId" value={{movie.id}} type="hidden">
                         <input type="submit" value="ChangeCuantity">
                         <br>
                     </form>
                     <form action="" method="post">
                         <input name="newCuantity" value=0 type="hidden">
-                        <input name="movieId" value={{movie['MV.movieid']}} type="hidden">
+                        <input name="movieId" value={{movie.id}} type="hidden">
                         <input type="submit" value="Remove from cart">
                     </form>
                 </div>
