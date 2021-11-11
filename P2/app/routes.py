@@ -83,6 +83,7 @@ def register():
     'email' in request.form and \
     'creditCard' in request.form and \
     'country' in request.form and \
+    'region' in request.form and \
     'city' in request.form and \
     'addres' in request.form:
         if DB.username_exists(request.form['username']) == False:
@@ -104,6 +105,7 @@ def register():
                                            request.form['email'],
                                            request.form['creditCard'],
                                            request.form['country'],
+                                           request.form['region'],
                                            request.form['city'],
                                            request.form['addres'],)
                 # Si hay un error en la BD lo indica
@@ -133,16 +135,27 @@ def register():
 
 @app.route('/showMovie/<int:movieId>', methods=['GET', 'POST'])
 def showMovie(movieId):
-    movie = DB.get_movie_info(movieId)
-
-    if 'cuantity' in request.form and request.form['cuantity'] != "":
+    if 'cuantity' in request.form:
         if 'usuario' in session:
             username = session['usuario']
         else:
             username = "ANONYMOUS"
-        DB.add_to_cart(username, movieId, int(request.form['cuantity']))
 
-    return render_template('detalleMovie.html', movie=movie, id=movieId)
+        if request.form['cuantity'] == "":
+            quantity = 1
+        else:
+            quantity = int(request.form['cuantity'])
+
+        DB.add_to_cart(username, movieId, iquantity)
+
+    return render_template('detalleMovie.html',
+                           movie=DB.get_movie_info(movieId),
+                           genres=DB.get_movie_genres(movieId),
+                           languages=DB.get_movie_languages(movieId),
+                           countries=DB.get_movie_countries(movieId),
+                           actors=DB.get_movie_actors(movieId),
+                           products=DB.get_movie_products(movieId),
+                           id=movieId)
 
 
 @app.route('/cesta', methods=['GET', 'POST'])

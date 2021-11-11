@@ -83,14 +83,10 @@ def get_movie_info(movieid):
         db_conn = db_engine.connect()
         movies = list(db_conn.execute(
             "SELECT MV.movietitle AS title, MV.movieid, " \
-            "MV.year AS date, DR.directorname AS director, " \
-            "ML.language AS language, MG.genre AS genre, PD.price AS price " \
+            "MV.year AS date, DR.directorname AS director " \
             "FROM imdb_movies AS MV " \
             "NATURAL JOIN imdb_directormovies " \
             "NATURAL JOIN imdb_directors AS DR " \
-            "NATURAL JOIN imdb_movielanguages AS ML " \
-            "NATURAL JOIN imdb_moviegenres AS MG " \
-            "NATURAL JOIN products AS PD " \
             "WHERE MV.movieid = " + str(movieid) + \
             " LIMIT 1"))
         db_conn.close()
@@ -98,6 +94,118 @@ def get_movie_info(movieid):
             return None
         else:
             return movies[0]
+    except Exception:
+        if db_conn is not None:
+            db_conn.close()
+        print("Exception in DB access:")
+        print("-" * 60)
+        traceback.print_exc(file=sys.stderr)
+        print("-" * 60)
+    return None
+
+
+def get_movie_products(movieid):
+    try:
+        db_conn = None
+        db_conn = db_engine.connect()
+        products = list(db_conn.execute(
+            "SELECT PD.movieid, PD.prod_id AS id , PD.price AS price, " \
+            "PD.description AS description, INV.stock AS stock, " \
+            "INV.sales AS sales " \
+            "FROM products AS PD NATURAL JOIN inventory AS INV " \
+            "WHERE PD.movieid = " + str(movieid)))
+        db_conn.close()
+        return products
+    except Exception:
+        if db_conn is not None:
+            db_conn.close()
+        print("Exception in DB access:")
+        print("-" * 60)
+        traceback.print_exc(file=sys.stderr)
+        print("-" * 60)
+    return None
+
+
+def get_movie_actors(movieid):
+    try:
+        db_conn = None
+        db_conn = db_engine.connect()
+        actors = list(db_conn.execute(
+            "SELECT AM.movieid, AM.\"character\" AS character, " \
+            "AM.creditsposition AS cp, AC.actorname AS name, " \
+            "AC.gender AS gender " \
+            "FROM imdb_actormovies AS AM NATURAL JOIN " \
+            "imdb_actors AS AC " \
+            "WHERE AM.movieid = " + str(movieid) + \
+            " ORDER BY AC.actorname"))
+        db_conn.close()
+        return actors
+    except Exception:
+        if db_conn is not None:
+            db_conn.close()
+        print("Exception in DB access:")
+        print("-" * 60)
+        traceback.print_exc(file=sys.stderr)
+        print("-" * 60)
+    return None
+
+
+def get_movie_countries(movieid):
+    try:
+        db_conn = None
+        db_conn = db_engine.connect()
+        """
+        countries = list(db_conn.execute(
+            "SELECT CT.country AS country, MC.movieid " \
+            "FROM imdb_moviecountries AS MC NATURAL JOIN countries AS CR " \
+            "WHERE MC.movieid = " + str(movieid)))
+        """
+        countries = list(db_conn.execute(
+            "SELECT movieid, country " \
+            "FROM imdb_moviecountries " \
+            "WHERE movieid = " + str(movieid)))
+        db_conn.close()
+        return countries
+    except Exception:
+        if db_conn is not None:
+            db_conn.close()
+        print("Exception in DB access:")
+        print("-" * 60)
+        traceback.print_exc(file=sys.stderr)
+        print("-" * 60)
+    return None
+
+
+def get_movie_genres(movieid):
+    try:
+        db_conn = None
+        db_conn = db_engine.connect()
+        genres = list(db_conn.execute(
+            "SELECT movieid, genre " \
+            "FROM imdb_moviegenres " \
+            "WHERE movieid = " + str(movieid)))
+        db_conn.close()
+        return genres
+    except Exception:
+        if db_conn is not None:
+            db_conn.close()
+        print("Exception in DB access:")
+        print("-" * 60)
+        traceback.print_exc(file=sys.stderr)
+        print("-" * 60)
+    return None
+
+
+def get_movie_languages(movieid):
+    try:
+        db_conn = None
+        db_conn = db_engine.connect()
+        languages = list(db_conn.execute(
+            "SELECT movieid, language " \
+            "FROM imdb_movielanguages " \
+            "WHERE movieid = " + str(movieid)))
+        db_conn.close()
+        return languages
     except Exception:
         if db_conn is not None:
             db_conn.close()
@@ -179,6 +287,7 @@ def create_user(username,
                 email,
                 creditcard,
                 country,
+                region,
                 city,
                 addres):
     try:
@@ -197,13 +306,14 @@ def create_user(username,
 
         db_conn.execute(
             "INSERT INTO customers (customerid, firstname, lastname, " \
-            "address1, city, country, creditcardtype, creditcard, " \
-            "creditcardexpiration, username, password) " \
-            "VALUES (" + str(customer_id) + ", " + str(firstname) + ", " + \
-            str(lastname) + ", " + str(addres) + ", " + str(city) + ", " + \
-            str(country) + ", credit, " + str(creditcard) + ", " + \
-            str(expiration) + ", " + str(username) + ", " + \
-            str(password) + ")")
+            "address1, city, country, region, email, creditcardtype, " \
+            "creditcard, creditcardexpiration, username, password) " \
+            "VALUES (" + str(customer_id) + ", '" + str(firstname) + \
+            "', '" + str(lastname) + "', '" + str(addres) + "', '" + \
+            str(city) + "', '" + str(country) + "', '" + str(region) + \
+            "', '" + str(email) + "', 'credit', '" + str(creditcard) + \
+            "', '" + str(expiration) + "', '" + str(username) + "', '" + \
+            str(password) + "')")
 
         return customer_id
     except Exception:
@@ -283,7 +393,7 @@ def get_or_create_cart(user_id):
             order_id = int(order_id[0].c) + 1
             db_conn.execute("INSERT INTO orders (orderid, customerid, " \
                             "orderdate, netamount, totalamount, status) VALUES " \
-                            "(" + str(order_id) + ", " + str(user_id) + \
+                            "('" + str(order_id) + "', " + str(user_id) + \
                             ", now(), 0, 0, 'ON')")
         else:
             order_id = orders[0]["orderid"]

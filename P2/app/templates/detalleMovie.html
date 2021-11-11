@@ -18,18 +18,56 @@
 
 {% block content %}
     {% if movie %}
-            <div class="contentCornerTR">
-                <form action="" method="post">
-                    <input name="cuantity" type="text" style="width:150px;text-align:center;" placeholder="Cuantity"><br>
-                    <input type="submit" value="AddToCart" style="width:168px;text-align:center;">
-                </form>
-            </div>
-            
             <b>Director:</b> {{ movie.director }}<br>
-            <b>Categoria:</b> {{ movie.genre }}<br>
-            <b>Idioma:</b> {{ movie.language }}<br>
             <b>Fecha:</b> {{ movie.date }}<br>
+            <b>Categoria:</b> {% if genres %}
+                                  {% for g in genres %} {{ g.genre }}, {% endfor %}
+                              {% endif %}<br>
+            <b>Idioma:</b> {% if languages %}
+                               {% for l in languages %} {{ l.language }}, {% endfor %}
+                           {% endif %}<br>
+            <b>Pais/es:</b> {% if countries %}
+                                {% for c in countries %} {{ c.country }}, {% endfor %}
+                            {% endif %}<br>
             <br>
-            <b>Precio:</b> {{ movie.price }}
+            <b>Actores:</b>
+            {% if actors %}
+                <ul>
+                    {% for actor in actors %}
+                        <li>
+                            <b>{{ actor.name }}</b> ({{ actor.gender }})<br>
+                            Personaje: {{ actor.character }}<br>
+                            Credit position: {{ actor.cp }}
+                        </li>
+                        <br>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                Ningun actor encontrado<br>
+            {% endif %}
+            <b>Productos:</b>
+            {% if products %}
+                <ul>
+                    {% for prod in products %}
+                        <li>
+                            <b>Descripcion:</b> {{ prod.description }}<br>
+                            Stock: {{ prod.stock }} / Vendidos: {{ prod.sales }}<br>
+                            {{ prod.price }}<br>
+                            {% if prod.stock == prod.sales %}
+                                No hay copias disponibles<br>
+                            {% else %}
+                                <form action="" method="post">
+                                    <input name="cuantity" type="text" value="1" style="width:150px;text-align:center;" placeholder="Cuantity"><br>
+                                    <input name="product" type="hidden" value="{{ prod.id }}">
+                                    <input type="submit" value="AddToCart" style="width:168px;text-align:center;">
+                                </form>
+                            {% endif %}
+                        </li>
+                        <br>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                Ningun producto encontrado
+            {% endif %}
     {% endif %}
 {% endblock %}

@@ -27,14 +27,16 @@
     <br>
     {% if movies %}
         {% for movie in movies %}
-            <div class="divPosterYTexto">
-                <div class = "divPosterPequenio">
-                    <img class="posterPequenio" src="{{ url_for('static', filename=movie.id) }}" alt="Poster {{ movie.id }}">
+            <li>
+                <div class="divPosterYTexto">
+                    <div class = "divPosterPequenio">
+                        <img class="posterPequenio" src="{{ url_for('static', filename=movie.id) }}" alt="Poster {{ movie.id }}">
+                    </div>
+                    <div class="divPeliculaInfo">
+                        <a href="{{ url_for('showMovie', movieId=movie.id)}}">{{ movie.title }}</a>
+                    </div>
                 </div>
-                <div class="divPeliculaInfo">
-                    <a href="{{ url_for('showMovie', movieId=movie.id)}}">{{ movie.title }}</a></li>
-                </div>
-            </div>
+            </li>
             <br>
         {% endfor %}
     {% else %}
