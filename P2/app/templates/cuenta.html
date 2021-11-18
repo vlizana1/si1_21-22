@@ -1,43 +1,46 @@
 {% extends "base.html" %}
 
 {% block title %}
-    {{ title }}
+    {{ datos.username }}
 {% endblock%}
 
 {% block header %}
-    {{ Cuenta }}
+    Cuenta
 {% endblock %}
 
 {% block content %}
-    <b>Nombre completo: </b>{{ datos.firstname }} {{ datos.lastname }}<br>
     <b>Nombre de Usuario: </b>{{ datos.username }}<br>
+    <b>Nombre completo: </b>{{ datos.firstname }} {{ datos.lastname }}<br>
     <b>Correo electronico: </b>{{ datos.email }}<br>
-    <b>Saldo: </b>{{ datos.income }}<br>
     <br>
+    <b>Saldo: </b>{{ datos.income }}<br>
     <form action="" method="post" novalidate>
         <label><b>Introducir saldo: </b></label>
         <input name="newbudget" type="text" placeholder="Cantidad a aniadir">
         <input type="submit" value="Aniadir"><br>
-    </form><br>
+    </form>
     <br>
-    <br>
-    <b>Historial:<b><br>
+    <b>Historial:</b><br>
     {% if historial %}
         <ul>
-        {% for id, cart in historial.items %}
-            <li>
-                Id de pedido: {{ id }}<br>
-                Fecha: {{ cart.date }}<br>
-                Precio: {{ cart.movies }}<br>
-                Peliculas:
-                {% for movie in cart.movies %}
-                    <li>
-                        <a href="{{ url_for('showMovie', movieId=movie.id)}}">{{ movie.title }}</a><br>
-                        Cantidad: {{ movie.quantity }}, Precio: {{ movie.price }}/u
-                    </li>
-                {% endfor %}
-            </li>
+        {% for cart in historial %}
+            <b>Pedido: {{ cart.id }}</b><br>
+            Fecha: {{ cart.date }}<br>
+            Precio (con impuestos): {{ cart.price }}<br>
+            Peliculas:
+            <ul>
+            {% for movie in cart.movies %}
+                <li>
+                    <a href="{{ url_for('showMovie', movieId=movie.id)}}">{{ movie.title }}</a>
+                    ({{ movie.description }})<br>
+                    Cantidad: {{ movie.quantity }}, Precio: {{ movie.price }}/u
+                </li>
+            {% endfor %}
+            </ul>
+            <br>
         {% endfor %}
         </ul>
+    {% else %}
+        No purchases done
     {% endif %}
 {% endblock %}

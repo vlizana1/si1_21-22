@@ -31,8 +31,8 @@
             <li><a href="{{ url_for('index') }}">Home</a></li>
             {% if session['usuario'] %}
                 <li><a href="{{ url_for('cuenta') }}">Pagina personal</a></li>
-            {% endif%}
             <li><a href="{{ url_for('cesta') }}">Cesta</a></li>
+            {% endif%}
         </ul>
         {% block menu%} {% endblock %}
     </div>

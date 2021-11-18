@@ -9,36 +9,46 @@
 {% endblock %}
 
 {% block content %}
+    <br>
+    <form action="" method="post">
+        <input name="movieName" type="text" placeholder="Enter movie's name">
+        <input type="submit" value="Search"><br>
+        <select name="movieCategory">
+                <option value="NONE">All Categories</option> 
+            {% for cat in categories %}
+                <option value="{{ cat.genre }}">{{ cat.genre }}</option> 
+            {% endfor %}
+        </select>
+        <input name="numMovies" value="{{ aux.lim }}" type="hidden">
+    </form><br>
+    <hr>
+    <br>
     {% if cabecera %}
-        {{ cabecera }}
-        <br>
-    {% else %}
-        <form action="" method="post">
-            <input name="movieName" type="text" placeholder="Enter movie's name">
-            <select name="movieCategory">
-                    <option value="NONE">-------</option> 
-                {% for cat in categories %}
-                    <option value="{{ cat.genre }}">{{ cat.genre }}</option> 
-                {% endfor %}
-            </select>
-            <input type="submit" value="SearchMovie">
-        </form>
+        <b>{{ cabecera }}</b><br><br>
     {% endif %}
+    <form action="" method="post">
+        Showing {{ aux.lim }} results | 
+        <input name="numMovies" type="text" placeholder="20 dafault">
+        <input type="submit" value="Change">
+        {% if aux.lastName %}
+            <input name="movieName" value="{{ aux.lastName }}" type="hidden">
+        {% endif %}
+        {% if aux.lastGen %}
+            <input name="movieCategory" value="{{ aux.lastGen }}" type="hidden">
+        {% endif %}
+    </form>
     <br>
     {% if movies %}
+        <ul>
         {% for movie in movies %}
             <li>
                 <div class="divPosterYTexto">
-                    <div class = "divPosterPequenio">
-                        <img class="posterPequenio" src="{{ url_for('static', filename=movie.id) }}" alt="Poster {{ movie.id }}">
-                    </div>
-                    <div class="divPeliculaInfo">
-                        <a href="{{ url_for('showMovie', movieId=movie.id)}}">{{ movie.title }}</a>
-                    </div>
+                    <a href="{{ url_for('showMovie', movieId=movie.id)}}">{{ movie.title }}</a>
                 </div>
             </li>
             <br>
         {% endfor %}
+        </ul>
     {% else %}
         <strong>NO SE ENCONTRARON PELICULAS</strong>
     {% endif %}

@@ -18,6 +18,9 @@
         <label><b>Contraseña</b></label>
         <input name="password" type="password" placeholder="Enter password"><br>
         {% if msg %}{{ msg.password }}{% endif %}<br>
+        <label><b>Confirma ontraseña</b></label>
+        <input name="password2" type="password" placeholder="Enter password again"><br>
+        {% if msg %}{{ msg.password2 }}{% endif %}<br>
         <br>
         <label><b>Name</b></label>
         <input name="firstname" type="text" placeholder="firstname">
@@ -29,18 +32,6 @@
         <br>
         <label><b>Tarjeta de Credito</b></label>
         <input name="creditCard" type="text" placeholder="Enter tarjeta de credito"><br>
-        <br>
-        
-        <label><b>Direccion</b></label>
-        <input name="country" type="text" placeholder="pais">/
-        <input name="region" type="text" placeholder="region">/
-        <input name="city" type="text" placeholder="ciudad">/
-        <input name="addres" type="text" placeholder="direccion">/<br>
-        <br>
-        
-        <br>
-        <label><b>¿Guardar la cesta anonima?</b></label>
-        <input type="checkbox" name="guardarCesta"><br>
         <br>
         <input type="submit" value="Register"><br>
         <br>

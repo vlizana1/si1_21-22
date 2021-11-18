@@ -32,16 +32,35 @@ def index():
     else:
         name_filter = None
     
+    if 'numMovies' in request.form and request.form['numMovies'] != "":
+        lim = request.form["numMovies"]
+    else:
+        lim = 20
+
     # Obtiene la lista de peliculas
     movies = DB.list_movies(name_filter=name_filter,
                             genre_filter=genre_filter,
-                            lim=20)
+                            lim=lim)
     
     # Obtiene la lista de generos
     categories = DB.list_genres()
-    
+
+    # Aniade otra informacion
     if cabecera == "":
-        return render_template('index.html', title="Home", movies=movies, categories=categories)
+        cabecera = None
+    else:
+        cabecera = "Showing movies" + cabecera + ":"
+
+    aux = {"lim": lim,
+           "lastGen": genre_filter,
+           "lastName": name_filter}
+
+    return render_template('index.html',
+                           title="Home",
+                           movies=movies,
+                           categories=categories,
+                           cabecera=cabecera,
+                           aux=aux)
         
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -80,12 +99,7 @@ def register():
     'password' in request.form and \
     'firstname' in request.form and \
     'lastname' in request.form and \
-    'email' in request.form and \
-    'creditCard' in request.form and \
-    'country' in request.form and \
-    'region' in request.form and \
-    'city' in request.form and \
-    'addres' in request.form:
+    'email' in request.form:
         if DB.username_exists(request.form['username']) == False:
             # Valida los campos introducidos
             validated = True
@@ -103,11 +117,7 @@ def register():
                                            request.form['firstname'],
                                            request.form['lastname'],
                                            request.form['email'],
-                                           request.form['creditCard'],
-                                           request.form['country'],
-                                           request.form['region'],
-                                           request.form['city'],
-                                           request.form['addres'],)
+                                           request.form['creditCard'])
                 # Si hay un error en la BD lo indica
                 if respuesta == None:
                     return render_template(
@@ -138,23 +148,17 @@ def showMovie(movieId):
     if 'cuantity' in request.form:
         if 'usuario' in session:
             username = session['usuario']
-        else:
-            username = "ANONYMOUS"
 
-        if request.form['cuantity'] == "":
-            quantity = 1
-        else:
-            quantity = int(request.form['cuantity'])
-
-        DB.add_to_cart(username, movieId, iquantity)
+            if request.form['cuantity'] == "":
+                quantity = 1
+            else:
+                quantity = int(request.form['cuantity'])
+            DB.add_to_cart(username,
+                           request.form["product"],
+                           quantity)
 
     return render_template('detalleMovie.html',
                            movie=DB.get_movie_info(movieId),
-                           genres=DB.get_movie_genres(movieId),
-                           languages=DB.get_movie_languages(movieId),
-                           countries=DB.get_movie_countries(movieId),
-                           actors=DB.get_movie_actors(movieId),
-                           products=DB.get_movie_products(movieId),
                            id=movieId)
 
 
@@ -168,32 +172,38 @@ def cesta():
         title = "Cesta anonima"
 
     if 'newCuantity' in request.form:
-        DB.mod_ordertail(session['usuario'],
-                         request.form['movieId'],
+        DB.mod_orderdetail(session['usuario'],
+                         request.form['prodId'],
                          request.form['newCuantity'])
 
     if 'TermComp' in request.form:
         msg = DB.end_cart(session['usuario'])
+    else:
+        msg = None
 
     cart = DB.get_actual_cart(username)
+    if cart and len(cart) > 0:
+        precioCesta = cart[0]["amount"]
+    else:
+        precioCesta = 0
 
     return render_template('cesta.html',
                            title=title,
                            cart=cart,
-                           precioCesta=cart[0]["OD.totalamount"],
-                           mensaje=msg)
+                           precioCesta=precioCesta,
+                           msg=msg)
 
 
 @app.route('/cuenta', methods=['GET', 'POST'])
 def cuenta():
     if 'usuario' in session:
-        historialAux = DB.get_historial(session['usuario'])
-        userInfo = DB.get_user_minor_info(session['usuario'])
-
-        return render_template('cuenta.html',
-                               title="Cuenta",
-                               datos=userInfo,
-                               historial=userInfo)
+        if 'newbudget' in request.form and request.form['newbudget'] != "":
+            DB.add_budget(session['usuario'], request.form['newbudget'])
+        return render_template(
+            'cuenta.html',
+            title="Cuenta",
+            datos=DB.get_user_minor_info(session['usuario']),
+            historial=DB.get_historial(session['usuario']))
     else:
         return render_template('login.html', title='Sign In')
 

@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
 {% block title %}
-    {{ title }}
+    Cesta
 {% endblock%}
 
 {% block header %}
@@ -9,54 +9,42 @@
 {% endblock %}
 
 {% block content %}
-    <div class="contentCornerTR"">
-        {% if not session['usuario'] %}
-            <b>you can't finish the purchase<br>
-            if you have not registered</b>
-        {% else %}
+    {% if session['usuario'] %}
+        <div class="contentCornerTR"">
             <form action="" method="post">
                 <input name="TermComp" type="submit" value="Terminar compra">
             </form>
-        {% endif%}
-    </div>
-    <br>
-    {% if mensaje %}
-        {{ mensaje }}<br>
-    {% else %}
+        </div>
         <br>
-    {% endif %}
-    <br>
-    {% if cart %}
-        Valor de la cesta: {{ precioCesta }}<br>
-        Peliculas:<br>
+        {% if msg %}<b>ERR: {{ msg }}</b>{% endif %}<br>
         <br>
-        <ul>
-        {% for movie in cart %}
-            <div class="divPosterYTexto">
-                <div class = "divPosterPequenio">
-                    <img class="posterPequenio" src="{{ url_for('static', filename=movie.id) }}" alt="Poster {{ movie.title }}">
-                </div>
-                <div id="divPeliculaInfo">
-                    <b><a href="{{ url_for('showMovie', movieId=movie.id) }}">{{ movie.title }}</a></b><br>
-                    Cantidad: {{ movie.quantity }}, Precio por unidad: {{ movie.price }}<br>
-                    
-                    <form action="" method="post">
-                        <input name="newCuantity" type="text" style="text-align:center;width:130px" placeholder="Enter new cuantity">
-                        <input name="movieId" value={{movie.id}} type="hidden">
-                        <input type="submit" value="ChangeCuantity">
-                        <br>
-                    </form>
-                    <form action="" method="post">
-                        <input name="newCuantity" value=0 type="hidden">
-                        <input name="movieId" value={{movie.id}} type="hidden">
-                        <input type="submit" value="Remove from cart">
-                    </form>
-                </div>
-            </div>
+            Valor de la cesta: {{ precioCesta }}<br>
             <br>
-        {% endfor %}
-    {% else %}
-        Cesta vacia
-    {% endif %}
-    </ul>
+            Peliculas:<br>
+            <br>
+            <ul>
+            {% for movie in cart %}
+                <div class="divPosterYTexto">
+                    <div id="divPeliculaInfo">
+                        <b><a href="{{ url_for('showMovie', movieId=movie.id) }}">{{ movie.title }}</a></b>
+                        ({{ movie.description }})<br>
+                        Cantidad: {{ movie.quantity }}, Precio por unidad: {{ movie.price }}<br>
+                        {% if movie.ERR %}<b>{{ movie.ERR }}</b>{% endif %}<br>
+                        <form action="" method="post">
+                            <input name="newCuantity" type="text" style="text-align:center;width:130px" placeholder="Enter new cuantity">
+                            <input name="prodId" value={{movie.prod_id}} type="hidden">
+                            <input type="submit" value="ChangeCuantity">
+                            <br>
+                        </form>
+                        <form action="" method="post">
+                            <input name="newCuantity" type="hidden" value=0>
+                            <input name="prodId" value={{movie.prod_id}} type="hidden">
+                            <input type="submit" value="Remove from cart">
+                        </form>
+                    </div>
+                </div>
+                <br>
+            {% endfor %}
+            </ul>
+    {% endif%}
 {% endblock %}

@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
 {% block title %}
-    {% if movie %}
+    {% if movie.title %}
         {{ movie.title }}
     {% else %}
         NOT FOUND
@@ -9,65 +9,50 @@
 {% endblock%}
 
 {% block header %}
-    {% if movie %}
+    {% if movie.title %}
         {{ movie.title }}
     {% else %}
-        <strong>Pelicula con id '{{ id }}' no encontrada</strong>
+        <b>NOT FOUND</b>
     {% endif %}
 {% endblock %}
 
 {% block content %}
-    {% if movie %}
-            <b>Director:</b> {{ movie.director }}<br>
+    {% if movie.title %}
+            <b>Directors:</b> {{ movie.directors.director }}<br>
             <b>Fecha:</b> {{ movie.date }}<br>
-            <b>Categoria:</b> {% if genres %}
-                                  {% for g in genres %} {{ g.genre }}, {% endfor %}
-                              {% endif %}<br>
-            <b>Idioma:</b> {% if languages %}
-                               {% for l in languages %} {{ l.language }}, {% endfor %}
-                           {% endif %}<br>
-            <b>Pais/es:</b> {% if countries %}
-                                {% for c in countries %} {{ c.country }}, {% endfor %}
-                            {% endif %}<br>
+            <b>Categoria:</b> {% for g in movie.genres %} {{ g.genre }}, {% endfor %}<br>
+            <b>Idioma:</b> {% for l in movie.languages %} {{ l.language }}, {% endfor %}<br>
+            <b>Pais/es:</b> {% for c in movie.countries %} {{ c.country }}, {% endfor %}<br>
             <br>
             <b>Actores:</b>
-            {% if actors %}
-                <ul>
-                    {% for actor in actors %}
-                        <li>
-                            <b>{{ actor.name }}</b> ({{ actor.gender }})<br>
-                            Personaje: {{ actor.character }}<br>
-                            Credit position: {{ actor.cp }}
-                        </li>
-                        <br>
-                    {% endfor %}
-                </ul>
-            {% else %}
-                Ningun actor encontrado<br>
-            {% endif %}
+            <ul>
+                {% for actor in movie.actors %}
+                    <li>
+                        <b>{{ actor.name }}</b> ({{ actor.gender }})<br>
+                        Personaje: {{ actor.character }}<br>
+                        Credit position: {{ actor.cp }}
+                    </li>
+                    <br>
+                {% endfor %}
+            </ul>
             <b>Productos:</b>
-            {% if products %}
-                <ul>
-                    {% for prod in products %}
-                        <li>
-                            <b>Descripcion:</b> {{ prod.description }}<br>
-                            Stock: {{ prod.stock }} / Vendidos: {{ prod.sales }}<br>
-                            {{ prod.price }}<br>
-                            {% if prod.stock == prod.sales %}
-                                No hay copias disponibles<br>
-                            {% else %}
-                                <form action="" method="post">
-                                    <input name="cuantity" type="text" value="1" style="width:150px;text-align:center;" placeholder="Cuantity"><br>
-                                    <input name="product" type="hidden" value="{{ prod.id }}">
-                                    <input type="submit" value="AddToCart" style="width:168px;text-align:center;">
-                                </form>
-                            {% endif %}
-                        </li>
-                        <br>
-                    {% endfor %}
-                </ul>
-            {% else %}
-                Ningun producto encontrado
-            {% endif %}
+            <ul>
+                {% for prod in movie.products %}
+                    <li>
+                        <b>Descripcion:</b> {{ prod.description }}<br>
+                        Stock: {{ prod.stock }} / Vendidos: {{ prod.sales }}<br>
+                        Precio: {{ prod.price }}<br>
+                        <form action="" method="post">
+                            <input name="cuantity" type="text" value="1" style="width:150px;text-align:center;" placeholder="Cuantity"><br>
+                            <input name="product" type="hidden" value="{{ prod.id }}">
+                            <input type="submit" value="AddToCart" style="width:168px;text-align:center;">
+                        </form>
+                    </li>
+                    <br>
+                {% endfor %}
+            </ul>
+    
+    {% else %}
+        <strong>Pelicula con id '{{ id }}' no encontrada</strong>
     {% endif %}
 {% endblock %}

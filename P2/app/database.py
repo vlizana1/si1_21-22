@@ -1,6 +1,7 @@
 import sys
 import traceback
 import random
+from decimal import *
 from datetime import datetime, timedelta
 from sqlalchemy import MetaData
 from sqlalchemy import create_engine
@@ -41,7 +42,8 @@ def list_movies(name_filter=None, genre_filter=None, lim=None):
         db_conn = None
         db_conn = db_engine.connect()
 
-        query = "SELECT MV.movietitle AS title, MV.movieid AS id"
+        query = "SELECT MV.movietitle AS title, MV.year AS date, " \
+                "MV.movieid AS id"
         if genre_filter != None:
             query += ", GR.genre"
 
@@ -56,7 +58,7 @@ def list_movies(name_filter=None, genre_filter=None, lim=None):
                 query += " WHERE"
             else:
                 query += " AND"
-            query += " lower(title) like '%%" + str(lower_name_filter) + "%%'"
+            query += " lower(MV.movietitle) like '%%" + str(lower_name_filter) + "%%'"
 
         if lim != None:
             query += " LIMIT " + str(lim)
@@ -81,91 +83,26 @@ def get_movie_info(movieid):
     try:
         db_conn = None
         db_conn = db_engine.connect()
-        movies = list(db_conn.execute(
-            "SELECT MV.movietitle AS title, MV.movieid, " \
-            "MV.year AS date, DR.directorname AS director " \
+        movie = list(db_conn.execute(
+            "SELECT MV.movieid, MV.movietitle AS title, " \
+            "MV.year AS date " \
             "FROM imdb_movies AS MV " \
-            "NATURAL JOIN imdb_directormovies " \
-            "NATURAL JOIN imdb_directors AS DR " \
             "WHERE MV.movieid = " + str(movieid) + \
             " LIMIT 1"))
-        db_conn.close()
-        if len(movies) == 0:
-            return None
+        if len(movie) == 0:
+            info = {"title": None}
+            print("NO EMNCONTRADO")
         else:
-            return movies[0]
-    except Exception:
-        if db_conn is not None:
-            db_conn.close()
-        print("Exception in DB access:")
-        print("-" * 60)
-        traceback.print_exc(file=sys.stderr)
-        print("-" * 60)
-    return None
-
-
-def get_movie_products(movieid):
-    try:
-        db_conn = None
-        db_conn = db_engine.connect()
-        products = list(db_conn.execute(
-            "SELECT PD.movieid, PD.prod_id AS id , PD.price AS price, " \
-            "PD.description AS description, INV.stock AS stock, " \
-            "INV.sales AS sales " \
-            "FROM products AS PD NATURAL JOIN inventory AS INV " \
-            "WHERE PD.movieid = " + str(movieid)))
+            info = {"title": movie[0]["title"],
+                    "date": movie[0]["date"],
+                    "genres": get_movie_genres(movieid),
+                    "languages": get_movie_languages(movieid),
+                    "countries": get_movie_countries(movieid),
+                    "directors": get_movie_director(movieid),
+                    "actors": get_movie_actors(movieid),
+                    "products": get_movie_products(movieid)}
         db_conn.close()
-        return products
-    except Exception:
-        if db_conn is not None:
-            db_conn.close()
-        print("Exception in DB access:")
-        print("-" * 60)
-        traceback.print_exc(file=sys.stderr)
-        print("-" * 60)
-    return None
-
-
-def get_movie_actors(movieid):
-    try:
-        db_conn = None
-        db_conn = db_engine.connect()
-        actors = list(db_conn.execute(
-            "SELECT AM.movieid, AM.\"character\" AS character, " \
-            "AM.creditsposition AS cp, AC.actorname AS name, " \
-            "AC.gender AS gender " \
-            "FROM imdb_actormovies AS AM NATURAL JOIN " \
-            "imdb_actors AS AC " \
-            "WHERE AM.movieid = " + str(movieid) + \
-            " ORDER BY AC.actorname"))
-        db_conn.close()
-        return actors
-    except Exception:
-        if db_conn is not None:
-            db_conn.close()
-        print("Exception in DB access:")
-        print("-" * 60)
-        traceback.print_exc(file=sys.stderr)
-        print("-" * 60)
-    return None
-
-
-def get_movie_countries(movieid):
-    try:
-        db_conn = None
-        db_conn = db_engine.connect()
-        """
-        countries = list(db_conn.execute(
-            "SELECT CT.country AS country, MC.movieid " \
-            "FROM imdb_moviecountries AS MC NATURAL JOIN countries AS CR " \
-            "WHERE MC.movieid = " + str(movieid)))
-        """
-        countries = list(db_conn.execute(
-            "SELECT movieid, country " \
-            "FROM imdb_moviecountries " \
-            "WHERE movieid = " + str(movieid)))
-        db_conn.close()
-        return countries
+        return info
     except Exception:
         if db_conn is not None:
             db_conn.close()
@@ -206,6 +143,95 @@ def get_movie_languages(movieid):
             "WHERE movieid = " + str(movieid)))
         db_conn.close()
         return languages
+    except Exception:
+        if db_conn is not None:
+            db_conn.close()
+        print("Exception in DB access:")
+        print("-" * 60)
+        traceback.print_exc(file=sys.stderr)
+        print("-" * 60)
+    return None
+
+
+def get_movie_countries(movieid):
+    try:
+        db_conn = None
+        db_conn = db_engine.connect()
+        countries = list(db_conn.execute(
+            "SELECT movieid, country " \
+            "FROM imdb_moviecountries " \
+            "WHERE movieid = " + str(movieid)))
+        db_conn.close()
+        return countries
+    except Exception:
+        if db_conn is not None:
+            db_conn.close()
+        print("Exception in DB access:")
+        print("-" * 60)
+        traceback.print_exc(file=sys.stderr)
+        print("-" * 60)
+    return None
+
+
+def get_movie_director(movieid):
+    try:
+        db_conn = None
+        db_conn = db_engine.connect()
+        director = list(db_conn.execute(
+            "SELECT DM.movieid, DR.directorname AS director " \
+            "FROM imdb_directormovies AS DM NATURAL JOIN " \
+            "imdb_directors AS DR "
+            "WHERE DM.movieid = " + str(movieid)))
+        db_conn.close()
+        return director[0]
+    except Exception:
+        if db_conn is not None:
+            db_conn.close()
+        print("Exception in DB access:")
+        print("-" * 60)
+        traceback.print_exc(file=sys.stderr)
+        print("-" * 60)
+    return None
+
+
+def get_movie_actors(movieid):
+    try:
+        db_conn = None
+        db_conn = db_engine.connect()
+        actors = list(db_conn.execute(
+            "SELECT AM.movieid, AM.\"character\" AS character, " \
+            "AM.creditsposition AS cp, AC.actorname AS name, " \
+            "AC.gender AS gender " \
+            "FROM imdb_actormovies AS AM NATURAL JOIN " \
+            "imdb_actors AS AC " \
+            "WHERE AM.movieid = " + str(movieid) + \
+            " ORDER BY AC.actorname"))
+        db_conn.close()
+        return actors
+    except Exception:
+        if db_conn is not None:
+            db_conn.close()
+        print("Exception in DB access:")
+        print("-" * 60)
+        traceback.print_exc(file=sys.stderr)
+        print("-" * 60)
+    return None
+
+
+def get_movie_products(movieid):
+    try:
+        db_conn = None
+        db_conn = db_engine.connect()
+        products = list(db_conn.execute(
+            "SELECT PD.movieid, PD.prod_id AS id , PD.price AS price, " \
+            "PD.description AS description, INV.stock AS stock, " \
+            "INV.sales AS sales " \
+            "FROM products AS PD NATURAL JOIN inventory AS INV " \
+            "WHERE PD.movieid = " + str(movieid) + \
+            " AND INV.stock > 0 " \
+            "ORDER BY PD.price"))
+        db_conn.close()
+        return products
     except Exception:
         if db_conn is not None:
             db_conn.close()
@@ -285,11 +311,7 @@ def create_user(username,
                 firstname,
                 lastname,
                 email,
-                creditcard,
-                country,
-                region,
-                city,
-                addres):
+                creditcard):
     try:
         # Conecta con la base de datos
         db_conn = None
@@ -300,20 +322,21 @@ def create_user(username,
                                            "as c FROM customers"))
         customer_id = int(customer_id[0].c) + 1
 
+        income = random.randint(0, 200)
+
         # Se crean datos para simplificar la funcion register
         expiration = datetime.today() + timedelta(weeks=10)
         expiration = expiration.strftime('%Y-%m-%d')
 
         db_conn.execute(
             "INSERT INTO customers (customerid, firstname, lastname, " \
-            "address1, city, country, region, email, creditcardtype, " \
-            "creditcard, creditcardexpiration, username, password) " \
+            "email, creditcardtype, creditcard, creditcardexpiration, " \
+            "income, username, password) " \
             "VALUES (" + str(customer_id) + ", '" + str(firstname) + \
-            "', '" + str(lastname) + "', '" + str(addres) + "', '" + \
-            str(city) + "', '" + str(country) + "', '" + str(region) + \
-            "', '" + str(email) + "', 'credit', '" + str(creditcard) + \
-            "', '" + str(expiration) + "', '" + str(username) + "', '" + \
-            str(password) + "')")
+            "', '" + str(lastname) + "', '" + str(email) + \
+            "', 'credit', '" + str(creditcard) + "', '" + \
+            str(expiration) + "', " +str(income) + ", '" + str(username) + \
+            "', '" + str(password) + "')")
 
         return customer_id
     except Exception:
@@ -417,17 +440,25 @@ def get_actual_cart(username):
         db_conn = db_engine.connect()
 
         cart = list(db_conn.execute(
-            "SELECT CM.username, OD.status, OD.totalamount, OT.prod_id, " \
-            "OT.price AS price, OT.quantity AS quantity, MV.movieid AS id, " \
-            " MV.movietitle AS title " \
+            "SELECT CM.username, OD.status, OD.totalamount AS amount, " \
+            "OT.prod_id AS prod_id, OT.price AS price, " \
+            "OT.quantity AS quantity, MV.movieid AS id, " \
+            "MV.movietitle AS title, INV.stock AS stock, " \
+            "PD.description AS description " \
             "FROM customers AS CM NATURAL JOIN " \
             "orders AS OD NATURAL JOIN " \
-            "ordertail AS OT NATURAL JOIN " \
-            "products NATURAL JOIN " \
+            "orderdetail AS OT NATURAL JOIN " \
+            "products AS PD NATURAL JOIN " \
+            "inventory AS INV NATURAL JOIN " \
             "imdb_movies AS MV " \
             "WHERE CM.username = '" + username + "' " \
-            "AND OD.status = 'ON' " \
-            "GROUP BY OT.prod_id"))
+            "AND OD.status = 'ON'" \
+            "ORDER BY OD.orderdate DESC"))
+
+        for p in cart:
+            if int(p["stock"]) < int(p["quantity"]):
+                p["ERR"] = "Stock insuficiente, quedan " + \
+                           str(p["stock"]) + " unidades disponibles"
 
         db_conn.close()
         return cart
@@ -448,24 +479,40 @@ def end_cart(username):
         db_conn = db_engine.connect()
 
         # Obtiene informacion sobre el usuario y el pedido
-        info = list(db_conn.execute(
-            "SELECT CM.username, CM.income, OR.orderid, OR.totalamount, " \
-            "OR.status " \
-            "FROM customers AS CM NATURAL JOIN orders AS OR " \
-            "WHERE CM.username = '" + usesrname + "' " \
-            "AND OR.status = 'ON'"))
+        prods = list(db_conn.execute(
+            "SELECT CM.username, CM.income AS income, ORD.status, " \
+            "ORD.totalamount AS totalamount, ORD.orderid AS oid, " \
+            "OT.quantity AS quantity, OT.prod_id AS id, INV.stock AS stock " \
+            "FROM customers AS CM NATURAL JOIN orders AS ORD " \
+            "NATURAL JOIN orderdetail AS OT NATURAL JOIN products " \
+            "NATURAL JOIN inventory AS INV " \
+            "WHERE CM.username = '" + str(username) + "' " \
+            "AND ORD.status = 'ON'"))
 
         # Si el carrito esta vacio lo indica
-        if len(info) == 0:
+        if len(prods) == 0:
+            db_conn.close()
             return "Carrito vacio"
 
-        info = info[0]
-
+        
         # Calcula el saldo restante
-        left = info["CM.income"] - info["OR.totalamount"]
+        left = Decimal(prods[0]["income"]) - Decimal(prods[0]["totalamount"])
         # Si el saldo es insuficiente lo indica
         if left < 0:
+            db_conn.close()
             return "Saldo insuficiente"
+
+        for p in prods:
+            if int(p["stock"]) < int(p["quantity"]):
+                db_conn.close()
+                return "Revisa los items"
+
+        # Actualiza el stock de las peliculas
+        for p in prods:
+            db_conn.execute(
+                "UPDATE inventory " \
+                "SET stock = " + str(int(p["stock"]) - int(p["quantity"])) + \
+                "WHERE prod_id = " + str(p["id"]))
 
         # Actualiza el saldo del usuario
         db_conn.execute(
@@ -477,7 +524,7 @@ def end_cart(username):
         db_conn.execute(
             "UPDATE orders " \
             "SET status = 'ENDED' " \
-            "WHERE orderid = " + str(info["OR.orderid"]))
+            "WHERE orderid = " + str(prods[0]["oid"]))
 
         db_conn.close()
         return None
@@ -492,25 +539,24 @@ def end_cart(username):
 
 
 # Aniade una pelicula al carrito
-def add_to_cart(username, movieId, quantity):
+def add_to_cart(username, prod_id, quantity):
     try:
         db_conn = None
         db_conn = db_engine.connect()
 
         # Obtiene el producto
-        prod_id = list(db_conn.execute("SELECT prod_id, movieid, price " \
-                                       "FROM products " \
-                                       "WHERE movieid = " + str(movieId)))
-        if len(prod_id) < 1:
+        info = list(db_conn.execute("SELECT prod_id, price " \
+                                    "FROM products " \
+                                    "WHERE prod_id = " + str(prod_id)))
+        if len(info) < 1:
             return None
 
         # Averigua el precio y el id
-        price = prod_id[0]["price"]
-        prod_id = prod_id[0]["prod_id"]
+        price = info[0]["price"]
 
         # Averigua el id del cliente
         user_id = list(db_conn.execute("SELECT * FROM customers "
-                                       "WHERE username='" + username + "'"))
+                                       "WHERE username = '" + str(username) + "'"))
         user_id = user_id[0]["customerid"]
 
         # Crea u obtiene un carrito abierto
@@ -518,7 +564,18 @@ def add_to_cart(username, movieId, quantity):
         order_id = get_or_create_cart(user_id)
         db_conn = db_engine.connect()
 
-        db_conn.execute("INSERT INTO ordertail (orderid, prod_id, price, " \
+        exist = list(db_conn.execute(
+            "SELECT orderid, prod_id, quantity " \
+            "FROM orderdetail " \
+            "WHERE orderid = " + str(order_id) + \
+            " AND prod_id = " + str(prod_id)))
+
+        if len(exist) > 0:
+            newQ = Decimal(exist[0]["quantity"]) + Decimal(quantity)
+            mod_orderdetail(username, prod_id, newQ)
+            return None
+
+        db_conn.execute("INSERT INTO orderdetail (orderid, prod_id, price, " \
                         "quantity) VALUES (" + str(order_id) + ", " + \
                         str(prod_id) + ", " + str(price) + ", " + \
                         str(quantity) + ")")
@@ -527,18 +584,20 @@ def add_to_cart(username, movieId, quantity):
         aux = list(db_conn.execute(
             "SELECT orderid, netamount, tax, totalamount " \
             "FROM orders " \
-            "WHERE orderid = " + order_id))
+            "WHERE orderid = " + str(order_id)))
         net = aux[0]["netamount"]
         tax = aux[0]["tax"]
         total = aux[0]["totalamount"]
 
         net = net + int(quantity) * price
-        total = net * tax + net
+        #total = net * tax + net
+        total = net * Decimal(0.21) + net
 
         db_conn.execute(
             "UPDATE orders " \
-            "SET netamount = " + str(net) + ", totalamount = " + set(total) + \
-            " WHERE ordersid = " + str(order_id))
+            "SET netamount = " + str(net) + \
+            ", totalamount = " + str(total) + \
+            " WHERE orderid = " + str(order_id))
 
         db_conn.close()
         return order_id
@@ -553,51 +612,53 @@ def add_to_cart(username, movieId, quantity):
 
 
 # Modifica o elimina un producto de un pedido
-def mod_ordertail(username, movieid, quantity):
+def mod_orderdetail(username, prodid, quantity):
     try:
         db_conn = None
         db_conn = db_engine.connect()
 
         # Encuentra y obtiene informacion del pedido
         info = list(db_conn.execute(
-            "SELECT CM.username, OR.orderid, OR.status, OR.netamount, " \
-            "OR.tax, OT.prod_id, OT.price, OT.quantity, PD.movieid " \
-            "FROM customers AS CM NATURAL JOIN orders AS OR NATURAL JOIN " \
-            "ordertail AS OT NATURAL JOIN products AS PD " \
-            "WHERE CM.username = '" + username + "' " \
-            "AND OR.status = 'ON' " \
-            "AND PD.movieid = " + str(movieid)))
+            "SELECT CM.username, ORD.orderid AS id, ORD.status, " \
+            "ORD.netamount AS amount, ORD.tax AS TAX, OT.prod_id, " \
+            "OT.price AS price, OT.quantity AS quantity, PD.movieid " \
+            "FROM customers AS CM NATURAL JOIN orders AS ORD NATURAL JOIN " \
+            "orderdetail AS OT NATURAL JOIN products AS PD " \
+            "WHERE CM.username = '" + str(username) + "' " \
+            "AND ORD.status = 'ON' " \
+            "AND PD.prod_id = " + str(prodid)))
         info = info[0]
 
         # Recalcula el nuevo precio
-        netamount = info["OR.netamount"]
-        netamount -= info["OT.price"] * info["OT.quantity"]
-        netamount += info["OT.price"] * quantity
-        totalamount = netamount + netamount * info["tax"]
+        netamount = Decimal(info["amount"])
+        netamount -= Decimal(info["price"]) * Decimal(info["quantity"])
+        netamount += Decimal(info["price"]) * Decimal(quantity)
+        #totalamount = Decimal(netamount) + Decimal(netamount) * Decimal(info["tax"])
+        totalamount = Decimal(netamount) + Decimal(netamount) * Decimal(0.21)
 
         # Actualiza el precio del pedido
         db_conn.execute(
             "UPDATE orders " \
             "SET netamount = " + str(netamount) + ", " \
             "totalamount = " + str(totalamount) + \
-            " WHERE orderid = " + str(info["OR.orderid"]))
+            " WHERE orderid = " + str(info["id"]))
 
         # Si la cantidad es 0 elimina el producto
-        if quantity == 0:
+        if int(quantity) == 0:
             db_conn.execute(
-                "DELETE FROM ordertail " \
-                "WHERE orderid = " + str(info["OR.orderid"]) + \
-                " AND prod_id = " + str(info["OT.prod_id"]))
+                "DELETE FROM orderdetail " \
+                "WHERE orderid = " + str(info["id"]) + \
+                " AND prod_id = " + str(prodid))
         # Actualiza la cantidad
         else:
             db_conn.execute(
-                "UPDATE ordertail " \
+                "UPDATE orderdetail " \
                 "SET quantity = " + str(quantity) + \
-                " WHERE orderid = " + str(info["OR.orderid"]) + \
-                " AND prod_id = " + str(info["OT.prod_id"]))
+                " WHERE orderid = " + str(info["id"]) + \
+                " AND prod_id = " + str(prodid))
 
         db_conn.close()
-        return
+        return None
     except Exception:
         if db_conn is not None:
             db_conn.close()
@@ -609,34 +670,77 @@ def mod_ordertail(username, movieid, quantity):
 
 
 # Devuelve el historial de pedidos
-def get_historial(usesrname):
+def get_historial(username):
     try:
         db_conn = None
         db_conn = db_engine.connect()
 
         # Obtiene el historial
         info = list(db_conn.execute(
-            "SELECT CM.username, OR.orderid, OR.orderdate, " \
-            "OR.totalamount, OR.status, OT.price, OT.quantity, " \
-            "MV.movieid, MV.movietitle " \
-            "FROM customers AS CM NATURAL JOIN orders AS OR " \
-            "NATURAL JOIN ordertail AS OT NATURAL JOIN products " \
+            "SELECT CM.username, ORD.orderid AS id, ORD.orderdate AS date, " \
+            "ORD.totalamount AS amount, ORD.status, OT.price AS price, " \
+            "OT.quantity AS quantity, MV.movieid AS mid, " \
+            "MV.movietitle AS title, PD.description AS description " \
+            "FROM customers AS CM NATURAL JOIN orders AS ORD " \
+            "NATURAL JOIN orderdetail AS OT NATURAL JOIN products AS PD " \
             "NATURAL JOIN imdb_movies AS MV " \
-            "WHERE CM.username = '" + username + \
-            " AND OR.status = 'ENDED'"))
+            "WHERE CM.username = '" + username + "'" + \
+            " AND ORD.status = 'ENDED' " \
+            "ORDER BY ORD.orderdate DESC"))
 
         # Agrupa el historial por pedidos
-        historial = {}
+        aux = {}
         for i in info:
-            id = i["OR.orderid"]
-            if id not in historial:
-                historial[id] = {"date": i["OR.orderdate"],
-                                 "price": i["OR.totalamount"],
-                                 "movies": []}
-            historial[id]["movies"].append({"title": i["MV.movietitle"],
-                                            "id": i["MV.movieid"],
-                                            "quantity": i["OT.quantity"],
-                                            "price": i["OT.price"]})
+            id = i["id"]
+            if id not in aux:
+                aux[id] = {"date": i["date"],
+                           "price": i["amount"],
+                           "movies": []}
+            aux[id]["movies"].append({"title": i["title"],
+                                      "id": i["mid"],
+                                      "description": i["description"],
+                                      "quantity": i["quantity"],
+                                      "price": i["price"]})
+
+        # Transforma historial en algo legible por el html
+        historial = []
+        for id in aux.keys():
+            historial.append({"id": id,
+                              "date": aux[id]["date"],
+                              "price": aux[id]["price"],
+                              "movies": aux[id]["movies"]})
+
+        db_conn.close()
+        if len(historial) == 0:
+            return None
+        return historial
+    except Exception:
+        if db_conn is not None:
+            db_conn.close()
+        print("Exception in DB access:")
+        print("-" * 60)
+        traceback.print_exc(file=sys.stderr)
+        print("-" * 60)
+    return None
+
+
+def add_budget(username, addedBudget):
+    try:
+        db_conn = None
+        db_conn = db_engine.connect()
+
+        income = list(db_conn.execute(
+            "SELECT username, income " \
+            "FROM customers " \
+            "WHERE username = '" + str(username) + "'"))
+
+        income = income[0]["income"]
+        income = int(income) + int(addedBudget)
+
+        db_conn.execute(
+            "UPDATE customers " \
+            "SET income = " + str(income) + \
+            " WHERE username = '" + str(username) + "'")
 
         db_conn.close()
         return historial
