@@ -11,7 +11,7 @@
 {% block content %}
     <br>
     <form action="/index" method="post">
-        <input name="movieName" type="text" placeholder="Enter movie's name">
+        <input name="movieName" type="text" style="width:200px;" placeholder="Enter movie's name">
         <input type="submit" value="Search"><br>
         <select name="movieCategory">
                 <option value="NONE">All Categories</option> 
@@ -28,7 +28,7 @@
     {% endif %}
     <form action="/index" method="post">
         Showing {{ aux.lim }} results | 
-        <input name="numMovies" type="text" placeholder="20 dafault">
+        <input name="numMovies" type="text" style="width:65px;" placeholder="20 dafault">
         <input type="submit" value="Change">
         {% if aux.lastName %}
             <input name="movieName" value="{{ aux.lastName }}" type="hidden">
@@ -42,7 +42,7 @@
         <ul>
         {% for movie in movies %}
             <li>
-                <div class="divPosterYTexto">
+                <div class="divResultadoBusqueda">
                     <a href="{{ url_for('showMovie', movieId=movie.id)}}">{{ movie.title }}</a>
                 </div>
             </li>

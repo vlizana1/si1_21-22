@@ -97,14 +97,17 @@ def logout():
 def register():
     if 'username' in request.form and \
     'password' in request.form and \
+    'password2' in request.form and \
     'firstname' in request.form and \
     'lastname' in request.form and \
-    'email' in request.form:
+    'email' in request.form and \
+    'creditCard' in request.form:
         if DB.username_exists(request.form['username']) == False:
             # Valida los campos introducidos
             validated = True
             msg = {'username': validarNombre(request.form['username']),
-                   'password': validarPassword(request.form['password']),
+                   'password': validarPassword(request.form['password'],
+                                               request.form['password2']),
                    'email': validarMail(request.form['email'])}
             for key in msg.keys():
                 if msg[key] != "OK":
@@ -217,7 +220,9 @@ def validarNombre(nombre):
         return "OK"
 
 
-def validarPassword(password):
+def validarPassword(password, password2):
+    if password != password2:
+        return "Password did not match"
     if password.find(" ") >= 0:
         return "Password can't contain spaces."
     elif len(password) < 8:

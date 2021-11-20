@@ -25,33 +25,37 @@
             <b>Pais/es:</b> {% for c in movie.countries %} {{ c.country }}, {% endfor %}<br>
             <br>
             <b>Actores:</b>
-            <ul>
-                {% for actor in movie.actors %}
-                    <li>
-                        <b>{{ actor.name }}</b> ({{ actor.gender }})<br>
-                        Personaje: {{ actor.character }}<br>
-                        Credit position: {{ actor.cp }}
-                    </li>
-                    <br>
-                {% endfor %}
-            </ul>
+            <div class="divActores">
+                <ul>
+                    {% for actor in movie.actors %}
+                        <li>
+                            <b>{{ actor.name }}</b> ({{ actor.gender }})<br>
+                            Personaje: {{ actor.character }}<br>
+                            Credit position: {{ actor.cp }}
+                        </li>
+                        <br>
+                    {% endfor %}
+                </ul>
+            </div>
+            <br>
             <b>Productos:</b>
-            <ul>
-                {% for prod in movie.products %}
-                    <li>
-                        <b>Descripcion:</b> {{ prod.description }}<br>
-                        Stock: {{ prod.stock }} / Vendidos: {{ prod.sales }}<br>
-                        Precio: {{ prod.price }}<br>
-                        <form action="/showMovie/{{ movie.id }}" method="post">
-                            <input name="cuantity" type="text" value="1" style="width:150px;text-align:center;" placeholder="Cuantity"><br>
-                            <input name="product" type="hidden" value="{{ prod.id }}">
-                            <input type="submit" value="AddToCart" style="width:168px;text-align:center;">
-                        </form>
-                    </li>
-                    <br>
-                {% endfor %}
-            </ul>
-    
+            <div class="divProductos">
+                <ul>
+                    {% for prod in movie.products %}
+                        <li>
+                            <b>Descripcion:</b> {{ prod.description }}<br>
+                            Stock: {{ prod.stock }} / Vendidos: {{ prod.sales }}<br>
+                            Precio: {{ prod.price }}<br>
+                            <form action="/showMovie/{{ movie.id }}" method="post">
+                                <input name="cuantity" type="text" value="1" style="width:40px;text-align:center;" placeholder="Cuantity">
+                                <input name="product" type="hidden" value="{{ prod.id }}">
+                                <input type="submit" value="AddToCart" style="width:150px;text-align:center;">
+                            </form>
+                        </li>
+                        <br>
+                    {% endfor %}
+                </ul>
+            </div>
     {% else %}
         <strong>Pelicula con id '{{ id }}' no encontrada</strong>
     {% endif %}
