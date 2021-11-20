@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <title>{% block title %} {% endblock %} - VideoClub</title>
     <!-- Uso de url_for para obtener la ruta de elementos de la página -->
-    <link rel="stylesheet" type="text/css" href={{ url_for('static', filename='estilo.css') }}/>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='estilo.css') }}"/>
 </head>
 
 <body>
@@ -29,10 +29,10 @@
         <strong> Enlaces:</strong>
         <ul>
             <li><a href="{{ url_for('index') }}">Home</a></li>
-            {% if session['usuario'] %}
+            {% if session.usuario %}
                 <li><a href="{{ url_for('cuenta') }}">Pagina personal</a></li>
-            <li><a href="{{ url_for('cesta') }}">Cesta</a></li>
-            {% endif%}
+                <li><a href="{{ url_for('cesta') }}">Cesta</a></li>
+            {% endif %}
         </ul>
         {% block menu%} {% endblock %}
     </div>

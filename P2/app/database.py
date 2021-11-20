@@ -84,7 +84,7 @@ def get_movie_info(movieid):
         db_conn = None
         db_conn = db_engine.connect()
         movie = list(db_conn.execute(
-            "SELECT MV.movieid, MV.movietitle AS title, " \
+            "SELECT MV.movieid AS movieid, MV.movietitle AS title, " \
             "MV.year AS date " \
             "FROM imdb_movies AS MV " \
             "WHERE MV.movieid = " + str(movieid) + \
@@ -93,7 +93,8 @@ def get_movie_info(movieid):
             info = {"title": None}
             print("NO EMNCONTRADO")
         else:
-            info = {"title": movie[0]["title"],
+            info = {"id": movie[0]["movieid"],
+                    "title": movie[0]["title"],
                     "date": movie[0]["date"],
                     "genres": get_movie_genres(movieid),
                     "languages": get_movie_languages(movieid),

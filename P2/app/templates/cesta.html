@@ -10,8 +10,8 @@
 
 {% block content %}
     {% if session['usuario'] %}
-        <div class="contentCornerTR"">
-            <form action="" method="post">
+        <div class="contentCornerTR">
+            <form action="/cesta" method="post">
                 <input name="TermComp" type="submit" value="Terminar compra">
             </form>
         </div>
@@ -30,13 +30,13 @@
                         ({{ movie.description }})<br>
                         Cantidad: {{ movie.quantity }}, Precio por unidad: {{ movie.price }}<br>
                         {% if movie.ERR %}<b>{{ movie.ERR }}</b>{% endif %}<br>
-                        <form action="" method="post">
+                        <form action="/cesta" method="post">
                             <input name="newCuantity" type="text" style="text-align:center;width:130px" placeholder="Enter new cuantity">
                             <input name="prodId" value={{movie.prod_id}} type="hidden">
                             <input type="submit" value="ChangeCuantity">
                             <br>
                         </form>
-                        <form action="" method="post">
+                        <form action="/cesta" method="post">
                             <input name="newCuantity" type="hidden" value=0>
                             <input name="prodId" value={{movie.prod_id}} type="hidden">
                             <input type="submit" value="Remove from cart">

@@ -10,7 +10,7 @@
 
 {% block content %}
     <br>
-    <form action="" method="post">
+    <form action="/index" method="post">
         <input name="movieName" type="text" placeholder="Enter movie's name">
         <input type="submit" value="Search"><br>
         <select name="movieCategory">
@@ -26,7 +26,7 @@
     {% if cabecera %}
         <b>{{ cabecera }}</b><br><br>
     {% endif %}
-    <form action="" method="post">
+    <form action="/index" method="post">
         Showing {{ aux.lim }} results | 
         <input name="numMovies" type="text" placeholder="20 dafault">
         <input type="submit" value="Change">

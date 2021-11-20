@@ -42,7 +42,7 @@
                         <b>Descripcion:</b> {{ prod.description }}<br>
                         Stock: {{ prod.stock }} / Vendidos: {{ prod.sales }}<br>
                         Precio: {{ prod.price }}<br>
-                        <form action="" method="post">
+                        <form action="/showMovie/{{ movie.id }}" method="post">
                             <input name="cuantity" type="text" value="1" style="width:150px;text-align:center;" placeholder="Cuantity"><br>
                             <input name="product" type="hidden" value="{{ prod.id }}">
                             <input type="submit" value="AddToCart" style="width:168px;text-align:center;">
