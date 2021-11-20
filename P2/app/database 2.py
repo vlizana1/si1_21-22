@@ -415,9 +415,9 @@ def get_or_create_cart(user_id):
                                             "FROM orders"))
             order_id = int(order_id[0].c) + 1
             db_conn.execute("INSERT INTO orders (orderid, customerid, " \
-                            "orderdate, netamount, totalamount, tax, " \
-                            "status) VALUES ('" + str(order_id) + "', " + \
-                            str(user_id) + ", now(), 0, 0, 21, 'ON')")
+                            "orderdate, netamount, totalamount, status) VALUES " \
+                            "('" + str(order_id) + "', " + str(user_id) + \
+                            ", now(), 0, 0, 'ON')")
         else:
             order_id = orders[0]["orderid"]
 
@@ -580,7 +580,6 @@ def add_to_cart(username, prod_id, quantity):
                         str(prod_id) + ", " + str(price) + ", " + \
                         str(quantity) + ")")
 
-        """
         # Actualiza el precio del carrito
         aux = list(db_conn.execute(
             "SELECT orderid, netamount, tax, totalamount " \
@@ -591,14 +590,14 @@ def add_to_cart(username, prod_id, quantity):
         total = aux[0]["totalamount"]
 
         net = net + int(quantity) * price
-        total = net * tax + net
+        #total = net * tax + net
+        total = net * Decimal(0.21) + net
 
         db_conn.execute(
             "UPDATE orders " \
             "SET netamount = " + str(net) + \
             ", totalamount = " + str(total) + \
             " WHERE orderid = " + str(order_id))
-        """
 
         db_conn.close()
         return order_id
@@ -637,14 +636,12 @@ def mod_orderdetail(username, prodid, quantity):
         #totalamount = Decimal(netamount) + Decimal(netamount) * Decimal(info["tax"])
         totalamount = Decimal(netamount) + Decimal(netamount) * Decimal(0.21)
 
-        """
         # Actualiza el precio del pedido
         db_conn.execute(
             "UPDATE orders " \
             "SET netamount = " + str(netamount) + ", " \
             "totalamount = " + str(totalamount) + \
             " WHERE orderid = " + str(info["id"]))
-        """
 
         # Si la cantidad es 0 elimina el producto
         if int(quantity) == 0:
