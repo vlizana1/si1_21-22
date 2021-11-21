@@ -13,7 +13,7 @@
     <b>Nombre completo: </b>{{ datos.firstname }} {{ datos.lastname }}<br>
     <b>Correo electronico: </b>{{ datos.email }}<br>
     <br>
-    <b>Saldo: </b>{{ datos.income }}<br>
+    <b>Saldo: </b>{{ datos.balance }}<br>
     <form action="/cuenta" method="post" novalidate>
         <label><b>Introducir saldo: </b></label>
         <input name="newbudget" type="text" style="width:115px;" placeholder="Cantidad a aniadir">
@@ -24,19 +24,22 @@
     {% if historial %}
         <ul>
         {% for cart in historial %}
-            <b>Pedido: {{ cart.id }}</b><br>
-            Fecha: {{ cart.date }}<br>
-            Precio (con impuestos): {{ cart.price }}<br>
-            Peliculas:
-            <ul>
-            {% for movie in cart.movies %}
-                <li>
-                    <a href="{{ url_for('showMovie', movieId=movie.id)}}">{{ movie.title }}</a>
-                    ({{ movie.description }})<br>
-                    Cantidad: {{ movie.quantity }}, Precio: {{ movie.price }}/u
-                </li>
-            {% endfor %}
-            </ul>
+            <li>
+                <b>Pedido: {{ cart.id }}</b><br>
+                Fecha: {{ cart.date }}<br>
+                Estado: {{ cart.status }}<br>
+                Precio (+{{ cart.tax }}% imp. incl.): {{ cart.price }}<br>
+                Peliculas:
+                <ul>
+                {% for movie in cart.movies %}
+                    <li>
+                        <a href="{{ url_for('showMovie', movieId=movie.id)}}">{{ movie.title }}</a>
+                        ({{ movie.description }})<br>
+                        Cantidad: {{ movie.quantity }}, Precio: {{ movie.price }}/u
+                    </li>
+                {% endfor %}
+                </ul>
+            </li>
             <br>
         {% endfor %}
         </ul>

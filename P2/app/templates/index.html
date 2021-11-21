@@ -10,6 +10,7 @@
 
 {% block content %}
     <br>
+    <div class="divPeliculas">
     <form action="/index" method="post">
         <input name="movieName" type="text" style="width:200px;" placeholder="Enter movie's name">
         <input type="submit" value="Search"><br>
@@ -21,35 +22,76 @@
         </select>
         <input name="numMovies" value="{{ aux.lim }}" type="hidden">
     </form><br>
-    <hr>
-    <br>
-    {% if cabecera %}
-        <b>{{ cabecera }}</b><br><br>
-    {% endif %}
-    <form action="/index" method="post">
-        Showing {{ aux.lim }} results | 
-        <input name="numMovies" type="text" style="width:65px;" placeholder="20 dafault">
-        <input type="submit" value="Change">
-        {% if aux.lastName %}
-            <input name="movieName" value="{{ aux.lastName }}" type="hidden">
-        {% endif %}
-        {% if aux.lastGen %}
-            <input name="movieCategory" value="{{ aux.lastGen }}" type="hidden">
-        {% endif %}
-    </form>
-    <br>
-    {% if movies %}
-        <ul>
-        {% for movie in movies %}
-            <li>
-                <div class="divResultadoBusqueda">
-                    <a href="{{ url_for('showMovie', movieId=movie.id)}}">{{ movie.title }}</a>
-                </div>
-            </li>
+    </div>
+    
+    <div class="divTopActors">
+        <form action="/index" method="post">
+            <b>Top actores de '{{ aux.topFilt }}'</b>
+            <select name="topCategory">
+                    <option value="NONE">DEFAULT</option> 
+                {% for cat in categories %}
+                    <option value="{{ cat.genre }}">{{ cat.genre }}</option> 
+                {% endfor %}
+            </select><br>
+            Showing {{ aux.limTop }} results | 
+            <input name="numTop" type="text" style="width:65px;" placeholder="10 dafault"><br>
+            <input type="submit" value="Search">
+            <input name="antFilt" value="{{ aux.topFilt }}" type="hidden">
+        </form>
+    </div>
+    
+    <div class="divAux">
+        <hr>
+    </div>
+    
+    <div class="divPeliculas">
+        {% if cabecera %}
+            <b>{{ cabecera }}</b><br>
+        {% else %}
             <br>
-        {% endfor %}
-        </ul>
-    {% else %}
-        <strong>NO SE ENCONTRARON PELICULAS</strong>
-    {% endif %}
+        {% endif %}
+        <form action="/index" method="post">
+            Showing {{ aux.lim }} results | 
+            <input name="numMovies" type="text" style="width:65px;" placeholder="20 dafault">
+            <input type="submit" value="Change">
+            {% if aux.lastName %}
+                <input name="movieName" value="{{ aux.lastName }}" type="hidden">
+            {% endif %}
+            {% if aux.lastGen %}
+                <input name="movieCategory" value="{{ aux.lastGen }}" type="hidden">
+            {% endif %}
+        </form>
+        <br>
+        {% if movies %}
+            <ul>
+            {% for movie in movies %}
+                <li>
+                    <div class="divResultado">
+                        <a href="{{ url_for('showMovie', movieId=movie.id)}}">{{ movie.title }}</a>
+                    </div>
+                </li>
+                <br>
+            {% endfor %}
+            </ul>
+        {% else %}
+            <strong>NO SE ENCONTRARON PELICULAS</strong>
+        {% endif %}
+    </div>
+    
+    <div class="divTopActors">
+        {% if topActores %}
+            {% for actor in topActores %}
+                <ul>
+                    <li>
+                        <div class="divResultado">
+                            <b>{{ actor.actorname }}</b><br>
+                            <u>Numero peliculas:</u> {{ actor.num_movies }}<br>
+                            <u>Debut</u> en {{ actor.debut }} con 
+                            <a href="{{ url_for('showMovie', movieId=actor.id)}}">{{ actor.title }}</a>
+                        </div>
+                    </li>
+                </ul>
+            {% endfor %}
+        {% endif %}
+    </div>
 {% endblock %}

@@ -291,7 +291,7 @@ def get_user_minor_info(username):
         db_conn = None
         db_conn = db_engine.connect()
         user = list(db_conn.execute(
-            "SELECT username, firstname, lastname, email, income " \
+            "SELECT username, firstname, lastname, email, balance " \
             "FROM customers " \
             "WHERE username = '" + username + "'"))
 
@@ -323,7 +323,7 @@ def create_user(username,
                                            "as c FROM customers"))
         customer_id = int(customer_id[0].c) + 1
 
-        income = random.randint(0, 200)
+        balance = random.randint(0, 200)
 
         # Se crean datos para simplificar la funcion register
         expiration = datetime.today() + timedelta(weeks=10)
@@ -332,12 +332,12 @@ def create_user(username,
         db_conn.execute(
             "INSERT INTO customers (customerid, firstname, lastname, " \
             "email, creditcardtype, creditcard, creditcardexpiration, " \
-            "income, username, password) " \
+            "income, balance, username, password) " \
             "VALUES (" + str(customer_id) + ", '" + str(firstname) + \
             "', '" + str(lastname) + "', '" + str(email) + \
             "', 'credit', '" + str(creditcard) + "', '" + \
-            str(expiration) + "', " +str(income) + ", '" + str(username) + \
-            "', '" + str(password) + "')")
+            str(expiration) + "', " + str(balance) + ", " + str(balance) + \
+            ", '" + str(username) + "', '" + str(password) + "')")
 
         return customer_id
     except Exception:
@@ -409,7 +409,7 @@ def get_or_create_cart(user_id):
         orders = list(db_conn.execute("SELECT orderid, status " \
                                       "FROM orders " \
                                       "WHERE customerid = " + str(user_id) + \
-                                      " AND status = 'ON'"))
+                                      " AND status = 'Open'"))
         # Si no hay ningun carrito abierto lo crea
         if len(orders) == 0:
             order_id = list(db_conn.execute("SELECT COUNT(orderid) as c " \
@@ -418,7 +418,7 @@ def get_or_create_cart(user_id):
             db_conn.execute("INSERT INTO orders (orderid, customerid, " \
                             "orderdate, netamount, totalamount, tax, " \
                             "status) VALUES ('" + str(order_id) + "', " + \
-                            str(user_id) + ", now(), 0, 0, 21, 'ON')")
+                            str(user_id) + ", now(), 0, 0, 21, 'Open')")
         else:
             order_id = orders[0]["orderid"]
 
@@ -441,7 +441,8 @@ def get_actual_cart(username):
         db_conn = db_engine.connect()
 
         cart = list(db_conn.execute(
-            "SELECT CM.username, OD.status, OD.totalamount AS amount, " \
+            "SELECT CM.username, OD.status, OD.netamount AS net, " \
+            "OD.tax AS tax, OD.totalamount AS amount, " \
             "OT.prod_id AS prod_id, OT.price AS price, " \
             "OT.quantity AS quantity, MV.movieid AS id, " \
             "MV.movietitle AS title, INV.stock AS stock, " \
@@ -453,7 +454,7 @@ def get_actual_cart(username):
             "inventory AS INV NATURAL JOIN " \
             "imdb_movies AS MV " \
             "WHERE CM.username = '" + username + "' " \
-            "AND OD.status = 'ON'" \
+            "AND OD.status = 'Open'" \
             "ORDER BY OD.orderdate DESC"))
 
         for p in cart:
@@ -481,14 +482,14 @@ def end_cart(username):
 
         # Obtiene informacion sobre el usuario y el pedido
         prods = list(db_conn.execute(
-            "SELECT CM.username, CM.income AS income, ORD.status, " \
+            "SELECT CM.username, CM.balance AS balance, ORD.status, " \
             "ORD.totalamount AS totalamount, ORD.orderid AS oid, " \
             "OT.quantity AS quantity, OT.prod_id AS id, INV.stock AS stock " \
             "FROM customers AS CM NATURAL JOIN orders AS ORD " \
             "NATURAL JOIN orderdetail AS OT NATURAL JOIN products " \
             "NATURAL JOIN inventory AS INV " \
             "WHERE CM.username = '" + str(username) + "' " \
-            "AND ORD.status = 'ON'"))
+            "AND ORD.status = 'Open'"))
 
         # Si el carrito esta vacio lo indica
         if len(prods) == 0:
@@ -497,7 +498,7 @@ def end_cart(username):
 
         
         # Calcula el saldo restante
-        left = Decimal(prods[0]["income"]) - Decimal(prods[0]["totalamount"])
+        left = Decimal(prods[0]["balance"]) - Decimal(prods[0]["totalamount"])
         # Si el saldo es insuficiente lo indica
         if left < 0:
             db_conn.close()
@@ -508,23 +509,10 @@ def end_cart(username):
                 db_conn.close()
                 return "Revisa los items"
 
-        # Actualiza el stock de las peliculas
-        for p in prods:
-            db_conn.execute(
-                "UPDATE inventory " \
-                "SET stock = " + str(int(p["stock"]) - int(p["quantity"])) + \
-                "WHERE prod_id = " + str(p["id"]))
-
-        # Actualiza el saldo del usuario
-        db_conn.execute(
-            "UPDATE customers " \
-            "SET income = " + str(left) + \
-            " WHERE username = '" + str(username) + "'")
-
-        # Actualiza el estado del pedido a acabado
+        # Actualiza el estado del pedido a pagado
         db_conn.execute(
             "UPDATE orders " \
-            "SET status = 'ENDED' " \
+            "SET status = 'Paid' " \
             "WHERE orderid = " + str(prods[0]["oid"]))
 
         db_conn.close()
@@ -627,7 +615,7 @@ def mod_orderdetail(username, prodid, quantity):
             "FROM customers AS CM NATURAL JOIN orders AS ORD NATURAL JOIN " \
             "orderdetail AS OT NATURAL JOIN products AS PD " \
             "WHERE CM.username = '" + str(username) + "' " \
-            "AND ORD.status = 'ON' " \
+            "AND ORD.status = 'Open' " \
             "AND PD.prod_id = " + str(prodid)))
         info = info[0]
 
@@ -682,14 +670,15 @@ def get_historial(username):
         # Obtiene el historial
         info = list(db_conn.execute(
             "SELECT CM.username, ORD.orderid AS id, ORD.orderdate AS date, " \
-            "ORD.totalamount AS amount, ORD.status, OT.price AS price, " \
-            "OT.quantity AS quantity, MV.movieid AS mid, " \
-            "MV.movietitle AS title, PD.description AS description " \
+            "ORD.totalamount AS amount, ORD.status AS status, " \
+            "ORD.tax AS tax, OT.price AS price, OT.quantity AS quantity, " \
+            "MV.movieid AS mid, MV.movietitle AS title, " \
+            "PD.description AS description " \
             "FROM customers AS CM NATURAL JOIN orders AS ORD " \
             "NATURAL JOIN orderdetail AS OT NATURAL JOIN products AS PD " \
             "NATURAL JOIN imdb_movies AS MV " \
             "WHERE CM.username = '" + username + "'" + \
-            " AND ORD.status = 'ENDED' " \
+            " AND ORD.status != 'Open' " \
             "ORDER BY ORD.orderdate DESC"))
 
         # Agrupa el historial por pedidos
@@ -698,7 +687,9 @@ def get_historial(username):
             id = i["id"]
             if id not in aux:
                 aux[id] = {"date": i["date"],
+                           "status": i["status"],
                            "price": i["amount"],
+                           "tax": i["tax"],
                            "movies": []}
             aux[id]["movies"].append({"title": i["title"],
                                       "id": i["mid"],
@@ -711,7 +702,9 @@ def get_historial(username):
         for id in aux.keys():
             historial.append({"id": id,
                               "date": aux[id]["date"],
+                              "status": aux[id]["status"],
                               "price": aux[id]["price"],
+                              "tax": aux[id]["tax"],
                               "movies": aux[id]["movies"]})
 
         db_conn.close()
@@ -733,21 +726,41 @@ def add_budget(username, addedBudget):
         db_conn = None
         db_conn = db_engine.connect()
 
-        income = list(db_conn.execute(
-            "SELECT username, income " \
+        balance = list(db_conn.execute(
+            "SELECT username, balance " \
             "FROM customers " \
             "WHERE username = '" + str(username) + "'"))
 
-        income = income[0]["income"]
-        income = int(income) + int(addedBudget)
+        balance = balance[0]["balance"]
+        balance = int(balance) + int(addedBudget)
 
         db_conn.execute(
             "UPDATE customers " \
-            "SET income = " + str(income) + \
+            "SET balance = " + str(balance) + \
             " WHERE username = '" + str(username) + "'")
 
         db_conn.close()
-        return historial
+        return None
+    except Exception:
+        if db_conn is not None:
+            db_conn.close()
+        print("Exception in DB access:")
+        print("-" * 60)
+        traceback.print_exc(file=sys.stderr)
+        print("-" * 60)
+    return None
+
+
+def get_top_actores(genre):
+    try:
+        db_conn = None
+        db_conn = db_engine.connect()
+
+        top = list(db_conn.execute(
+            "SELECT * FROM getTopActors('" + str(genre) + "')"))
+
+        db_conn.close()
+        return top
     except Exception:
         if db_conn is not None:
             db_conn.close()

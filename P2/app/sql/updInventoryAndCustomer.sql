@@ -1,41 +1,47 @@
 CREATE OR REPLACE FUNCTION updInventory() RETURNS TRIGGER AS $$
-DECLARE
-    product record;
-BEGIN
-
-CREATE TABLE tabla_aux(
-    prod_id INTEGER
-);
-INSERT INTO tabla_aux
-    SELECT prod_id AS product FROM orderdetail WHERE orderdetail.orderid = new.orderid;
-
-
-IF (new.status = 'Paid') THEN
-    UPDATE
-        inventory
-    SET
-        sales = sales + orderdetail.quantity,
-        stock = stock - orderdetail.quantity
-    FROM
-        orderdetail, tabla_aux
-    WHERE
-        orderdetail.prod_id = tabla_aux.prod_id;
-    INSERT INTO alerts (prod_id)
-        SELECT prod_id FROM inventory NATURAL JOIN orderdetail, tabla_aux WHERE (inventory.stock = 0 AND inventory.prod_id=tempo.prod_id AND orderid=new.orderid);
-	UPDATE 
-		alerts
-	SET 
-		fecha = CURRENT_TIMESTAMP;
-	FROM inventory NATURAL JOIN orderdetail, tabla_aux 
-	WHERE inventory.prod_id= alerts.prod_id;
-END IF;
-
-DROP TABLE tabla_aux;
-
-RETURN NULL;
-END;
+    DECLARE
+        prod RECORD;
+    BEGIN
+        IF (NEW.status = 'Paid') THEN
+            FOR prod IN (SELECT prod_id, orderid, quantity
+                         FROM orderdetail
+                         WHERE orderid = NEW.orderid) LOOP
+                UPDATE inventory
+                    SET sales = sales + prod.quantity,
+                        stock = stock - prod.quantity
+                    WHERE prod_id = prod.prod_id;
+            END LOOP;
+        END IF;
+        
+        UPDATE customers
+            SET balance = balance - NEW.totalamount
+            WHERE customerid = NEW.customerid;
+        
+        RETURN NULL;
+    END;
 $$ LANGUAGE plpgsql;
 
+
+CREATE OR REPLACE FUNCTION updAlerts() RETURNS TRIGGER AS $$
+    BEGIN
+        IF (NEW.stock <= 0) AND (OLD.stock > 0) THEN
+            INSERT INTO alerts (prod_id, fecha)
+                VALUES (NEW.prod_id, CURRENT_TIMESTAMP);
+        END IF;
+        RETURN NULL;
+    END;
+$$ LANGUAGE plpgsql;
+
+
 DROP TRIGGER IF EXISTS updInventory ON orders;
-CREATE TRIGGER updInventory AFTER UPDATE ON orders
-FOR EACH ROW EXECUTE PROCEDURE updInventory();
+CREATE TRIGGER updInventory
+    AFTER UPDATE
+    ON orders
+    FOR EACH ROW EXECUTE PROCEDURE updInventory();
+
+
+DROP TRIGGER IF EXISTS updAlerts ON inventory;
+CREATE TRIGGER updAlerts
+    AFTER UPDATE
+    ON inventory
+    FOR EACH ROW EXECUTE PROCEDURE updAlerts();

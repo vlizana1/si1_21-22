@@ -25,7 +25,7 @@ def index():
     else:
         genre_filter = None
     
-    # Establece el fintro por nombre, si hay
+    # Establece el filtro por nombre, si hay
     if 'movieName' in request.form and request.form['movieName'] != "":
         name_filter = request.form['movieName']
         cabecera = " which contains '" + request.form['movieName'] + "'" + cabecera
@@ -36,6 +36,20 @@ def index():
         lim = request.form["numMovies"]
     else:
         lim = 20
+
+    # Numero de actores a mostrar
+    if 'numTop' in request.form and request.form['numTop'] != "":
+        limTop = request.form["numTop"]
+    else:
+        limTop = 10
+
+    # Categoria a la que pertenecen los actores
+    if 'topCategory' in request.form and request.form['topCategory'] != "NONE":
+        top_filter = request.form['topCategory']
+    elif 'antFilt' in request.form:
+        top_filter = request.form['antFilt']
+    else:
+        top_filter = 'Action'
 
     # Obtiene la lista de peliculas
     movies = DB.list_movies(name_filter=name_filter,
@@ -53,13 +67,19 @@ def index():
 
     aux = {"lim": lim,
            "lastGen": genre_filter,
-           "lastName": name_filter}
+           "lastName": name_filter,
+           "limTop": limTop,
+           "topFilt": top_filter}
+
+    # Obtiene el top actors
+    topActores = DB.get_top_actores(top_filter)
 
     return render_template('index.html',
                            title="Home",
                            movies=movies,
                            categories=categories,
                            cabecera=cabecera,
+                           topActores=topActores[:int(limTop)],
                            aux=aux)
         
 
@@ -186,14 +206,16 @@ def cesta():
 
     cart = DB.get_actual_cart(username)
     if cart and len(cart) > 0:
-        precioCesta = cart[0]["amount"]
+        precio = {"sinImp": cart[0]["net"],
+                  "conImp": cart[0]["amount"],
+                  "imp": cart[0]["tax"]}
     else:
-        precioCesta = 0
+        precio = None
 
     return render_template('cesta.html',
                            title=title,
                            cart=cart,
-                           precioCesta=precioCesta,
+                           precio=precio,
                            msg=msg)
 
 

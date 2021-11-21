@@ -60,30 +60,45 @@ body {
     width: 265px;
 }
 
-.divResultadoBusqueda {
-    display: flex;
+.divPeliculas {
+    float: left;
+    width: 50%;
+    min-height: 70px;
+}
+
+.divTopActors {
+    float: right;
+    width: 48%;
+    min-height: 70px;
+}
+
+.divResultado {
     min-height: 30px;
 }
 
 .divActores {
     background-color: rgb(207, 215, 255);
-    height: 370px;
+    max-height: 370px;
     overflow-y: scroll;
 }
 
 .divProductos {
     background-color: rgb(207, 215, 255);
-    height: 200px;
     overflow-y: scroll;
 }
 
-.divPeliculaInfo {
+.divFloat {
     float: left;
-    height: 90px;
-    text-align: left;
+    height: 160px;
+    width: 190px;
+    border: 10px solid transparent;
 }
 
-
+.divAux {
+    float: left;
+    width: 100%;
+    height: 20px;
+}
 
 
 

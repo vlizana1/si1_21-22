@@ -18,9 +18,14 @@
         <br>
         {% if msg %}<b>ERR: {{ msg }}</b>{% endif %}<br>
         <br>
-            Valor de la cesta: {{ precioCesta }}<br>
+        {% if precio %}
+            <b>Valor de la cesta:</b>
+            <ul>
+                Sin impuestos: {{ precio.sinImp }}<br>
+                Con impuestos ({{ precio.imp }}%): {{ precio.conImp }}<br>
+            </ul>
             <br>
-            Peliculas:<br>
+            <b>Peliculas:</b><br>
             <br>
             <ul>
             {% for movie in cart %}
@@ -46,5 +51,8 @@
                 <br>
             {% endfor %}
             </ul>
+        {% else %}
+            Sin articulos en la cesta
+        {% endif %}
     {% endif%}
 {% endblock %}

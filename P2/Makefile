@@ -4,9 +4,9 @@ PSSWRD =  PGPASSWORD=alumnodb
 DB_NAME = si1
 DB = $(PSSWRD) psql $(AUTH) $(DB_NAME)
 
-all: reset_db unzip_db actualiza set update
+all: reset_db unzip_db actualiza set update get
 
-get: getTopSales getTopActors
+get: getTopActors getTopSales
 
 reset_db:
 	$(PSSWRD) dropdb --if-exists $(AUTH) $(DB_NAME)
@@ -24,8 +24,6 @@ set:
 
 update:
 	cat $(DIR)updOrders.sql | $(DB)
-
-update2:
 	cat $(DIR)updInventoryAndCustomer.sql | $(DB)
 
 getTopSales:
