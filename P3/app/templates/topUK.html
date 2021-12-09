@@ -3,20 +3,49 @@
  Ejemplo de MongoDB
 -->
 <HTML> 
-  <HEAD> 
-	  <META HTTP-EQUIV="CONTENT-TYPE" CONTENT="text/html; charset=utf-8"> 
-	  <TITLE>Ejemplo de MongoDB</TITLE>
-  </HEAD> 
+    <HEAD> 
+        <META HTTP-EQUIV="CONTENT-TYPE" CONTENT="text/html; charset=utf-8"> 
+        <TITLE>Ejemplo de MongoDB</TITLE>
+    </HEAD> 
 
-  <BODY>
- 
-    <h2> Ejemplo de MongoDB</h2>
-
-    <!-- TODO: tabla de películas SciFi -->
-
-    <!-- TODO: tabla de películas Drama -->
-
-    <!-- TODO: tabla de películas JR y AB -->
-
-  </BODY>
+    <BODY>
+        <h2> Ejemplo de MongoDB</h2>
+        
+        <!-- TODO: tabla de películas SciFi -->
+        <h3>Peliculas SciFi entre 1994 y 1998:</h3>
+            {% for movie in movies[0] %}
+                <ul>
+                    <li><b>{{ movie.title }}</b> from {{ movie.year }}<br></li>
+                    <b>Gernres:</b> {% for g in movie.genres %} {{ g }}, {% endfor %}<br>
+                    <b>Directors:</b> {% for d in movie.directors %} {{ d }}, {% endfor %}<br>
+                    <b>Actors:</b> {% for a in movie.actors %} {{ a }}, {% endfor %}<br>
+                    <b>Most related:</b> {% for m in movie.most_related_movies %} {{ m.title }}, {% endfor %}<br>
+                    <b>Related:</b> {% for r in movie.related_movies %} {{ r.title }}, {% endfor %}<br>
+                </ul>
+            {% endfor %}
+        <!-- TODO: tabla de películas Drama -->
+        <h3>Peliculas Drama de 1998 que empiecen por 'The':</h3>
+            {% for movie in movies[1] %}
+                <ul>
+                    <li><b>{{ movie.title }}</b> from {{ movie.year }}<br></li>
+                    <b>Gernres:</b> {% for g in movie.genres %} {{ g }}, {% endfor %}<br>
+                    <b>Directors:</b> {% for d in movie.directors %} {{ d }}, {% endfor %}<br>
+                    <b>Actors:</b> {% for a in movie.actors %} {{ a }}, {% endfor %}<br>
+                    <b>Most related:</b> {% for m in movie.most_related_movies %} {{ m.title }}, {% endfor %}<br>
+                    <b>Related:</b> {% for r in movie.related_movies %} {{ r.title }}, {% endfor %}<br>
+                </ul>
+            {% endfor %}
+        <!-- TODO: tabla de películas JR y AB -->
+        <h3>Peliculas con Julia Roberts y Alec Baldwin:</h3>
+            {% for movie in movies[2] %}
+                <ul>
+                    <li><b>{{ movie.title }}</b> from {{ movie.year }}<br></li>
+                    <b>Gernres:</b> {% for g in movie.genres %} {{ g }}, {% endfor %}<br>
+                    <b>Directors:</b> {% for d in movie.directors %} {{ d }}, {% endfor %}<br>
+                    <b>Actors:</b> {% for a in movie.actors %} {{ a }}, {% endfor %}<br>
+                    <b>Most related:</b> {% for m in movie.most_related_movies %} {{ m.title }}, {% endfor %}<br>
+                    <b>Related:</b> {% for r in movie.related_movies %} {{ r.title }}, {% endfor %}<br>
+                </ul>
+            {% endfor %}
+    </BODY>
 </HTML>

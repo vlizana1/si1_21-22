@@ -20,7 +20,7 @@ except Exception:
 
 # Datos de busqueda
 numPelis = 400
-pais = "Britain"
+pais = "UK"
 
 
 # Querys
@@ -29,7 +29,7 @@ query_topMovies = "SELECT MV.movieid AS movieid, MV.movietitle AS movietitle, " 
                   "FROM imdb_movies AS MV NATURAL JOIN " \
                        "imdb_moviecountries AS MC " \
                   "WHERE MC.country = '%%PAIS%%' " \
-                  "ORDER BY MV.year " \
+                  "ORDER BY MV.year DESC " \
                   "LIMIT %%NUM%%;"
 
 query_movieGenres = "SELECT * " \
@@ -49,36 +49,36 @@ query_movieActors = "SELECT AC.actorname AS actorname, AM.movieid " \
 
 # Obtiene las peliculas
 movies = []
-for movie in db_conn.execute(query_topMovies.replace(pais, "%%NUM%%").replace(numPelis, "%%NUM%%"):
+for movie in list(db_conn.execute(query_topMovies.replace("%%PAIS%%", pais).replace("%%NUM%%", str(numPelis)))):
     if movie:
         # Titulo sin la fecha
         title = movie["movietitle"].split(" (")
         title = title[0]
 
         # Anio
-        ayear = movie["year"]
+        year = int(movie["year"])
 
         # Generos
         genres = []
-        for genre in db_conn.execute(query_movieGenres.replace(movie["movieid"], "%%ID%%")):
+        for genre in db_conn.execute(query_movieGenres.replace("%%ID%%", str(movie["movieid"]))):
             if genre and genre not in genres:
                 genres.append(genre["genre"])
 
         # Directores
         directors = []
-        for director in db_conn.execute(query_movieDirectors.replace(movie["movieid"], "%%ID%%")):
+        for director in db_conn.execute(query_movieDirectors.replace("%%ID%%", str(movie["movieid"]))):
             if director and director not in directors:
                 directors.append(director["directorname"])
 
         # Actores
         actors = []
-        for actor in db_conn.execute(query_movieActors.replace(movie["movieid"], "%%ID%%")):
+        for actor in db_conn.execute(query_movieActors.replace("%%ID%%", str(movie["movieid"]))):
             if actor[0] != "" and actor not in actors:
                 actors.append(actor["actorname"])
 
         # Aniade la pelicula y su informacion a la lista
         movies.append({"title"              : title,
-                       "genres"             : genre,
+                       "genres"             : genres,
                        "year"               : year,
                        "directors"          : directors,
                        "actors"             : actors,
@@ -89,24 +89,26 @@ for movie in db_conn.execute(query_topMovies.replace(pais, "%%NUM%%").replace(nu
 # Peliculas relacionadas y mas relacionadas
 for i in range(len(movies)):
     m1 = movies[i]
-    for m2 in movies[i:]:
-        # Coincidencia de generos
-        c = (len(m1["genres"] & m2["genres"]) / len(m1["genres"] | m2["genres"])) * 100
+    if len(m1["genres"]) > 0:
+        for m2 in movies[i:]:
+            if len(m2["genres"]) > 0:
+                # Coincidencia de generos
+                c = (len(set(m1["genres"]) & set(m2["genres"])) / len(set(m1["genres"]) | set(m2["genres"]))) * 100
 
-        if c == 100 and len(m1["genres"]) > 1 and len(m2["genres"]):
-            if len(m1["most_related_movies"]) < 10:
-                m1["most_related_movies"].append({"title": m2["title"],
-                                                  "year": m2["year"]})
-            if len(m2["most_related_movies"]) < 10:
-                m2["most_related_movies"].append({"title": m1["title"],
-                                                  "year": m1["year"]})
-        elif c >= 50:
-            if len(m1["related_movies"]) < 10:
-                m1["related_movies"].append({"title": m2["title"],
-                                             "year": m2["year"]})
-            if len(m2["related_movies"]) < 10:
-                m2["related_movies"].append({"title": m1["title"],
-                                             "year": m1["year"]})
+                if c == 100 and len(m1["genres"]) > 1 and len(m2["genres"]):
+                    if len(m1["most_related_movies"]) < 10:
+                        m1["most_related_movies"].append({"title": m2["title"],
+                                                          "year": m2["year"]})
+                    if len(m2["most_related_movies"]) < 10:
+                        m2["most_related_movies"].append({"title": m1["title"],
+                                                          "year": m1["year"]})
+                elif c >= 50:
+                    if len(m1["related_movies"]) < 10:
+                        m1["related_movies"].append({"title": m2["title"],
+                                                     "year": m2["year"]})
+                    if len(m2["related_movies"]) < 10:
+                        m2["related_movies"].append({"title": m1["title"],
+                                                     "year": m1["year"]})
 
 
 # Cierra la conexion con la base de datos
@@ -118,6 +120,8 @@ mngClient = pyMNG.MongoClient("mongodb://localhost:27017/")
 # Obtiene la DB
 db = mngClient["si1"]
 
-# Obtiene y aniade el topUSA
+# Borra y aniade el topUSA
+coleccion = db["topUK"]
+coleccion.drop()
 coleccion = db["topUK"]
 coleccion.insert_many(movies)
