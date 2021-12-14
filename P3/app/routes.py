@@ -7,7 +7,6 @@ from flask import render_template, request, url_for
 import os
 import sys
 import time
-from . import mongoDB
 
 @app.route('/', methods=['POST','GET'])
 @app.route('/index', methods=['POST','GET'])
@@ -32,12 +31,11 @@ def borraCiudad():
 @app.route('/topUK', methods=['POST','GET'])
 def topUK():
     # TODO: consultas a MongoDB ...
-    movies=[mongoDB.find(genre="Sci-Fi",
+    movies=[database.findTop(genre="Sci-Fi",
                          year=list(range(1994, 1998+1))),
-            mongoDB.find(title=", The",
+            database.findTop(title=", The",
                          genre="Drama",
                          year=1998),
-            mongoDB.find(actor=["Roberts, Julia", "Baldwin, Alec"])]
-    
+            database.findTop(actor=["Roberts, Julia", "Baldwin, Alec"])]
 
     return render_template('topUK.html', movies=movies)
